@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 勿忘心 🌟中控台</title>
+    <style>
+        /* 核心替换：完美复刻点餐前端的温暖手作奶油色系 */
+        body { font-family: 'Arial', sans-serif; background-color: #fbf7f0; margin: 0; padding: 40px 20px; color: #5d4037; }
+        .admin-container { max-width: 900px; margin: 0 auto; }
+        
+        h1 { color: #8B5A2B; text-align: center; font-size: 28px; margin-bottom: 10px; font-weight: bold; }
+        .subtitle { text-align: center; color: #a1887f; font-size: 14px; margin-bottom: 40px; margin-top: 0; letter-spacing: 1px; }
+        
+        /* 商家卡片风格：白色圆角、极轻微雅致阴影 */
+        .shop-card { background: #ffffff; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(139, 90, 43, 0.05); border: 1px solid #f3ebe1; }
+        .shop-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #fbf7f0; padding-bottom: 15px; margin-bottom: 20px; }
+        .shop-name { font-size: 20px; font-weight: bold; color: #8B5A2B; }
+        
+        /* 状态标签 */
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
+        .status-badge.normal { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .status-badge.locked { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        
+        /* 控制区域 */
+        .control-group { background: #fdfbf7; padding: 18px; border-radius: 12px; border: 1px solid #f5ede2; }
+        .control-group label { display: block; font-size: 13px; color: #8d6e63; margin-bottom: 10px; font-weight: bold; }
+        
+        /* 输入框：融入烘焙原木色微阴影 */
+        .reason-input { width: 100%; padding: 12px; background: #ffffff; border: 1px solid #d7ccc8; color: #5d4037; border-radius: 8px; box-sizing: border-box; margin-bottom: 20px; font-size: 14px; transition: border-color 0.2s; }
+        .reason-input:focus { border-color: #8B5A2B; outline: none; }
+        
+        /* 按钮组：完美复刻标志性深棕色与温暖辅助色 */
+        .btn-group { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn { flex: 1; min-width: 160px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-align: center; font-size: 14px; }
+        
+        .btn-lock { background: #d32f2f; color: white; }
+        .btn-lock:hover { background: #b71c1c; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.2); }
+        
+        .btn-unlock { background: #1cc716; color: white; }
+        .btn-unlock:hover { background: #14b60e; box-shadow: 0 4px 10px rgba(139, 90, 43, 0.3); }
+        
+        .btn-clear { background: #f5ede2; color: #8d6e63; border: 1px solid #e0d4c3; }
+        .btn-clear:hover { background: #eddcc6; color: #5d4037; }
+    </style>
+    <script src="shops.js"></script>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h1>🛠️ 勿忘心 中控总掌权台</h1>
+
+        <div id="shops-management-list"></div>
+    </div>
+
+    <script>
+        const dbUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+        function renderAdminPortal() {
+            const listContainer = document.getElementById('shops-management-list');
+            listContainer.innerHTML = ""; 
+
+            Object.keys(allShopsData).forEach(shopId => {
+                const shopConfig = allShopsData[shopId];
+                
+                const cardHtml = `
+                    <div class="shop-card">
+                        <div class="shop-header">
+                            <span class="shop-name">🏪 ${shopConfig.shopName} (${shopId})</span>
+                            <span class="status-badge" id="badge-${shopId}">同步云端状态...</span>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>拉黑停机锁定理由 (isLocked 为 true 时在前线登录页红字警告显示)</label>
+                            <input type="text" id="reason-${shopId}" class="reason-input" value="未按时缴纳系统维护费">
+                            
+                            <div class="btn-group">
+                                <button class="btn btn-lock" onclick="setShopLock('${shopId}', true)">🔒 一键官方死锁封号</button>
+                                <button class="btn btn-unlock" onclick="setShopLock('${shopId}', false)">🔓 一键解封恢复营业</button>
+                                <button class="btn btn-clear" onclick="clearAllDeviceLocks('${shopId}')">📱 清除全店指纹授权</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.innerHTML += cardHtml;
+                fetchShopStatus(shopId);
+            });
+        }
+
+        async function fetchShopStatus(shopId) {
+            try {
+                const response = await fetch(`${dbUrl}/shop_status/${shopId}.json`);
+                const data = await response.json();
+                const badge = document.getElementById(`badge-${shopId}`);
+                
+                if (badge) {
+                    if (data && data.isLocked === true) {
+                        badge.innerText = "🚨 已依法锁死";
+                        badge.className = "status-badge locked";
+                        if(data.reason) document.getElementById(`reason-${shopId}`).value = data.reason;
+                    } else {
+                        badge.innerText = "🟢 正常营业中";
+                        badge.className = "status-badge normal";
+                    }
+                }
+            } catch (err) {
+                console.error("抓取状态失败", err);
+            }
+        }
+
+        async function setShopLock(shopId, shouldLock) {
+            const reasonText = document.getElementById(`reason-${shopId}`).value.trim();
+            const targetUrl = `${dbUrl}/shop_status/${shopId}.json`;
+            
+            let payload = null;
+            if (shouldLock) {
+                payload = { isLocked: true, reason: reasonText, lockTime: new Date().toLocaleString() };
+            } else {
+                payload = { isLocked: false };
+            }
+
+            try {
+                await fetch(targetUrl, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                alert(`操作成功！已同步 ${shopId} 的云端死锁状态。`);
+                fetchShopStatus(shopId);
+            } catch (err) {
+                alert("云端通信失败！");
+            }
+        }
+
+        async function clearAllDeviceLocks(shopId) {
+            if(!confirm(`确定要重置清除 ${shopId} 旗下的所有物理指纹绑定吗？`)) return;
+            
+            const targetUrl = `${dbUrl}/device_locks/${shopId}.json`;
+            try {
+                await fetch(targetUrl, { method: 'DELETE' });
+                alert("该店设备锁已全部重置成功！");
+            } catch (err) {
+                alert("重置失败！");
+            }
+        }
+
+        window.onload = () => {
+            renderAdminPortal();
+        };
+    </script>
+</body>
+</html>

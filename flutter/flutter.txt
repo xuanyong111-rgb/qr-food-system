@@ -1,0 +1,39 @@
+categoryTitle: 黄豆号到蓝逗号。 en两个。 补回黄色。 再补回蓝色。
+
+2name:蓝色。 到蓝色下面。
+
+Firebase开关键
+false/true
+
+允许粘贴
+Yǔnxǔ zhāntiē
+
+
+纯自动消失（完全不需要人手去按
+// 🎯 精准拦截：只有状态是 pending 的订单才触发
+            if (orderData && orderData.status === "pending") {
+                console.log("🎉 成功拦截到一笔全新待做订单！ID:", orderId);
+                
+                onNewOrderArrived(orderData); // ⚡ 触发自动打小票
+                renderOrderCardToKitchen(orderId, orderData); // 🖥️ 渲染到后厨大屏
+                updateOrderStatus(orderId, "cooking"); // 🔒 锁死状态
+
+                // ⏰ 🧠 核心瘦身微调：让卡片在屏幕上显示 8 秒钟后，自动触发消失，不需要人去按！
+                setTimeout(() => {
+                    completeOrder(orderId); 
+                }, 8000); // 8000 毫秒 = 8 秒（你可以自己改成 5000 或 10000）
+            }
+
+
+// === 文件名：浏览器控制台 (批量生成 Hash) ===
+async function getMultipleHashes(pwdArray) {
+const results = {};
+for (const pwd of pwdArray) {
+const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+results[pwd] = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+console.log(JSON.stringify(results, null, 2));
+}
+
+// 在控制台贴入整段代码，在数组里放进所有你想生成的密码，按 Enter 即可一次性输出全部
+getMultipleHashes(["8888", "9999"]);

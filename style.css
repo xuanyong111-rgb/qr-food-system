@@ -1,0 +1,418 @@
+ /* 基础样式重置 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #FAF6F0; /* 温馨的米白色背景 */
+            color: #4A3E3D; /* 深咖啡色字体，比纯黑更柔和 */
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* 店铺头部信息 */
+        .header { text-align: center; padding: 25px 0 20px 0; }
+        .header h1 { font-size: 26px; font-weight: 800; color: #633E1A; letter-spacing: 1px; margin-bottom: 6px; }
+        .header p { font-size: 13px; color: #A08875; letter-spacing: 0.5px; }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #8B5A2B;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 14px;
+            color: #A08875;
+        }
+
+        /* 分类标题 */
+        .category-title {
+            font-size: 18px;
+            color: #8B5A2B;
+            border-left: 4px solid #CD853F;
+            padding-left: 10px;
+            margin: 25px 0 15px 0;
+        }
+
+        /* 菜品列表容器 */
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 单个菜品样式 */
+        .menu-item {
+            background: #FFFFFF;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(139, 90, 43, 0.05); /* 淡淡的阴影 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4A3E3D;
+            margin-bottom: 4px;
+        }
+
+        .item-desc {
+            font-size: 12px;
+            color: #9E8E87;
+        }
+
+        .item-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #D2691E; /* 醒目的烘焙金黄色 */
+            white-space: nowrap;
+        }
+
+        /* 页脚提示 */
+        .footer {
+            text-align: center;
+            margin-top: 4px;
+            padding: 30px 0;
+            font-size: 12px;
+            color: #BFB0A3;
+        }
+        /* 追加在 style.css 最底部 */
+.item-img {
+    width: 90px;         /* 宽度 */ 
+    height: 65px;        /* 高度 */
+    object-fit: cover;   /* 自动裁剪填充防止变形，类似 Flutter 的 BoxFit.cover */
+    border-radius: 6px;  /* 圆角 */
+    margin-right: 10px;  /* 图片与文字之间的间距 */
+    flex-shrink: 0;      /* 防止图片被压缩变形 */
+}
+#shop-logo { 
+    width: 450px; 
+    height: 150px; 
+    object-fit: cover; 
+    border-radius: 16px; 
+    border: 3px solid #FFF; 
+    box-shadow: 0 4px 12px rgba(139, 90, 43, 0.15); 
+    margin-bottom: 12px; 
+}
+/* 确保原本的条目可以横向完美排开（照片+文字+价钱） */
+.menu-item {
+    display: flex;
+    align-items: center;
+}
+/* 桌号总卡片：相当于一个圆角居中的 Container Row */
+.table-card { background-color: #FFF; border: 2px solid #8B5A2B; padding: 8px 24px; border-radius: 30px; display: flex; width: max-content; align-items: center; justify-content: center; margin: 0 auto 25px auto; box-shadow: 0 4px 15px rgba(139, 90, 43, 0.08); }
+
+/* 漂亮的文字样式 */
+.table-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #8B5A2B;            /* 烘焙面包的焦糖色 */
+    margin-left: 10px;
+}
+
+/* 搜索栏外壳 */
+.search-bar-container {
+    padding: 0 16px;
+    margin-bottom: 16px;
+}
+.search-box { position: relative; display: flex; align-items: center; background: #FFF; border: 1px solid #EFE2D5; border-radius: 25px; padding: 12px 20px; box-shadow: 0 6px 15px rgba(139, 90, 43, 0.05); }
+
+/* 输入框原生样式消除 */
+#menu-search {
+    border: none;
+    background: none;
+    outline: none;
+    width: 100%;
+    padding-left: 28px; /* 给左边的放大镜留位置 */
+    font-size: 1rem;
+    color: #8B5A2B;
+}
+#menu-search::placeholder {
+    color: #BA9B82; /* 提示文字颜色 */
+}
+
+/* 🔍 纯 CSS 绘制放大镜图标 */
+.search-icon {
+    position: absolute;
+    left: 16px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #8B5A2B; /* 放大镜的圆圈 */
+    border-radius: 50%;
+}
+.search-icon::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 2px;
+    height: 6px;
+    background: #8B5A2B; /* 放大镜的把手 */
+    transform: rotate(-45deg);
+    transform-origin: top left;
+}
+
+/* 全屏结算页面外壳 */
+.cart-page {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #FDF9F5; /* 100% 贴合你原本的浅米杏底色 */
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 90px;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* 头部导航栏 */
+.cart-header {
+    background: #F7EBE1; /* 换成跟桌号一样的温暖木质底色 */
+    padding: 18px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #EFE2D5;
+}
+.back-btn { 
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    margin-right: 16px; 
+    color: #8B5A2B; /* 换成你的招牌深棕色 */
+    font-weight: bold;
+}
+.cart-header h2 { 
+    font-size: 1.2rem; 
+    margin: 0; 
+    color: #8B5A2B; /* 统一主色调 */
+    font-weight: 600;
+}
+
+/* 店铺与桌号展示区 */
+.cart-shop-info {
+    background: #FFFBF7;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #F3E6DA;
+}
+#cart-shop-name {
+    font-weight: bold;
+    color: #633E1A; /* 更深沉的面包香气咖 */
+}
+.cart-table-badge {
+    background: #8B5A2B; /* 桌号反白显眼，用主色调 */
+    color: #FFF;
+    padding: 4px 14px;
+    border-radius: 20px; /* 极简小胶囊圆角 */
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+/* 商品列表区 */
+.cart-section-title { 
+    padding: 20px 16px 10px 16px; 
+    font-weight: bold; 
+    color: #8B5A2B; 
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}
+.cart-items-list { 
+    background: #FFFBF7; 
+    padding: 0 16px; 
+    border-top: 1px solid #F3E6DA;
+    border-bottom: 1px solid #F3E6DA;
+}
+.cart-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #FDF5ED;
+    color: #503318;
+    font-size: 1rem;
+}
+.cart-item-row:last-child {
+    border-bottom: none;
+}
+
+/* 优惠券输入框模块 */
+.discount-section {
+    background: #FFFBF7; 
+    margin-top: 14px; 
+    padding: 12px 16px;
+    display: flex; 
+    gap: 12px;
+    border-top: 1px solid #F3E6DA;
+    border-bottom: 1px solid #F3E6DA;
+}
+#coupon-input {
+    flex: 1; 
+    border: 1px solid #E6D5C5; 
+    border-radius: 12px;
+    padding: 10px 14px; 
+    background: #FFFEEF; 
+    outline: none;
+    color: #8B5A2B;
+    font-size: 0.9rem;
+}
+#coupon-input::placeholder {
+    color: #D2BEAD;
+}
+.use-btn {
+    background: #BA9B82; /* 优雅的灰卡其色，取代刺眼的亮橘色 */
+    color: #FFF; 
+    border: none;
+    padding: 10px 22px; 
+    border-radius: 12px; 
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.use-btn:hover {
+    background: #8B5A2B;
+}
+
+/* 账单总计明细区 */
+.bill-section { 
+    background: #FFFBF7; 
+    margin-top: 14px; 
+    padding: 18px 16px; 
+    border-top: 1px solid #F3E6DA;
+    border-bottom: 1px solid #F3E6DA;
+}
+.bill-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 12px; 
+    color: #7A6048; 
+    font-size: 0.95rem;
+}
+.bill-divider { 
+    border: none; 
+    border-top: 1px dashed #DCC8B7; /* 换成复古个性的虚线断点，超有质感 */
+    margin: 14px 0; 
+}
+.total-row { 
+    color: #4A2E14; 
+    font-size: 1.15rem; 
+}
+
+/* 底部固定结算大按钮 */
+.cart-footer-btn {
+    position: fixed; 
+    bottom: 0; left: 0; right: 0;
+    background: #FDF9F5; 
+    padding: 14px 16px; 
+    border-top: 1px solid #EFE2D5;
+}
+.confirm-order-btn {
+    width: 100%; 
+    background: #8B5A2B; /* 换成标志性的阳光烘焙浓咖色 */
+    color: #FFF; 
+    border: none;
+    border-radius: 30px; 
+    padding: 14px 24px; 
+    font-size: 1.05rem;
+    font-weight: bold;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(139, 90, 43, 0.25); /* 淡淡的同色系高级阴影 */
+    cursor: pointer;
+}
+.item-count-badge {
+    background: rgba(255, 255, 255, 0.25); 
+    padding: 2px 10px; 
+    border-radius: 20px; 
+    font-size: 0.85rem;
+}
+
+/* 右下角漂浮购物车小圆圈 */
+.floating-cart {
+    position: fixed;
+    right: 22px;
+    bottom: 35px;
+    width: 56px;
+    height: 56px;
+    /* 🛠️ 核心修改：把原本的 #8B5A2B 删掉，改成 transparent（透明） */
+    background: transparent; 
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* 🛠️ 可选：如果不需要原先咖啡色大圆圈自带的阴影，可以把下面这行 box-shadow 删掉 */
+    box-shadow: none; 
+    transition: transform 0.2s;
+    z-index: 1001;
+}
+.floating-cart:active {
+    transform: scale(0.92); /* 戳下去有 Flutter 般的物理缩放回弹感 */
+}
+.floating-cart span {
+    position: absolute; 
+    top: -2px; 
+    right: -2px; 
+    background: #CD5C5C; /* 柔和的复古砖红气泡数字，告别地摊亮红色 */
+    color: white; 
+    font-size: 0.75rem; 
+    font-weight: bold;
+    padding: 3px 7px; 
+    border-radius: 10px;
+}
+/* 🛠️ 控制图片变圆并撑满外圈 */
+.floating-cart .cart-icon-img {
+    width: 100%;          /* 撑满 56px 的大圆圈 */
+    height: 100%;
+    object-fit: cover;    /* 裁切铺满，不留白边 */
+    border-radius: 50%;   /* 🧠 关键：让你的正方形图片瞬间变成完美的圆形！ */
+    display: block;
+}
+/* 🍧 加料弹窗专属样式 */
+.spec-modal-mask {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+}
+.spec-modal-content {
+    background: #fff; width: 90%; max-width: 450px; border-radius: 16px;
+    padding: 20px; position: relative; max-height: 85vh; overflow-y: auto;
+}
+.spec-close-btn {
+    position: absolute; top: 15px; right: 20px; font-size: 28px; color: #999; cursor: pointer;
+}
+.spec-main-img {
+    width: 95%; height: 200px; object-fit: cover; border-radius: 12px; margin-top: 10px;
+}
+.spec-section-title {
+    font-weight: bold; margin: 15px 0 10px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;
+}
+.spec-option-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 12px 0; cursor: pointer;
+}
+.spec-option-left {
+    display: flex; align-items: center; gap: 10px;
+}
+.spec-option-price {
+    color: #e67e22; font-weight: bold;
+}
+.spec-footer {
+    display: flex; align-items: center; justify-content: space-between; margin-top: 25px; gap: 15px;
+}
+.spec-quantity-selector {
+    display: flex; align-items: center; background: #f5f5f5; border-radius: 20px; padding: 5px 10px; gap: 15px;
+}
+.spec-quantity-selector button {
+    border: none; background: none; font-size: 20px; cursor: pointer; width: 30px; height: 30px;
+}
+#spec-add-btn {
+    flex: 1; background: #8B5A2B; color: #fff; border: none; padding: 12px 20px;
+    border-radius: 25px; display: flex; justify-content: space-between; font-weight: bold; cursor: pointer;
+}

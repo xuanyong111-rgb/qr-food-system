@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> 勿忘心 🌟 | 电子菜单 🌟</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="header">
+        <img id="shop-logo" src="" alt="Logo" style="display: none;">
+        <h1 id="shop-name">加载中...</h1>
+        <p id="shop-slogan">欢迎光临，请稍候...</p>
+    </div>
+
+    <div id="table-display-card" class="table-card" style="display: none;">
+        <span class="table-text" id="table-display-text">📍 座位：载入中</span>
+    </div>
+
+    <div id="menu-container"></div>
+
+    <div class="footer">
+        <p id="shop-footer">© 2026 版权所有</p>
+        <p>请至前台收银处点餐，祝您用餐愉快！</p>
+    </div>
+
+    <script src="shops.js"></script>
+
+    <div id="cart-page" class="cart-page" style="display: none;">
+        <div class="cart-header">
+            <span class="back-btn" onclick="toggleCartPage(false)">←</span>
+            <h2>购物车</h2>
+        </div>
+
+        <div class="cart-shop-info">
+            <span id="cart-shop-name">勿忘心 🌟</span>
+            <span id="cart-table-number" class="cart-table-badge">未入座</span>
+        </div>
+
+        <div class="cart-section-title">您的商品</div>
+        <div id="cart-items-list" class="cart-items-list"></div>
+
+        <div class="discount-section">
+            <input type="text" placeholder="优惠码" id="coupon-input">
+            <button class="use-btn">使用</button>
+        </div>
+
+        <div class="bill-section">
+            <div class="bill-row"><span>总计</span><span id="bill-subtotal">RM 0.00</span></div>
+            <div class="bill-row"><span>折扣</span><span>RM 0.00</span></div>
+            <div class="bill-row"><span>SST (6%)</span><span id="bill-sst">RM 0.00</span></div>
+            <div class="bill-row"><span>四舍五入</span><span id="bill-rounding">RM 0.00</span></div>
+            <hr class="bill-divider">
+            <div class="bill-row total-row"><strong>实付金额</strong><strong id="bill-total">RM 0.00</strong></div>
+        </div>
+
+        <div class="cart-footer-btn">
+            <button class="confirm-order-btn" onclick="submitOrderToCloud()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="item-count-badge" id="cart-badge-count">0</span>
+                <span>确认订单</span>
+                <span id="cart-btn-total">RM 0.00</span>
+            </button>
+        </div>
+    </div> 
+    
+    <div class="floating-cart" onclick="toggleCartPage(true)" id="floating-cart-btn">
+        <img src="images/wuwangxin_A🌟/勿忘心.png" alt="购物车" class="cart-icon-img">
+        <span id="main-cart-count">0</span>
+    </div>
+
+    <div id="spec-modal" class="spec-modal-mask" style="display: none;">
+        <div class="spec-modal-content">
+            <span class="spec-close-btn" onclick="closeSpecModal()">&times;</span>
+            
+            <img id="spec-item-img" src="" alt="菜品图片" class="spec-main-img">
+            <h2 id="spec-item-name">菜品名称</h2>
+            <p id="spec-item-desc" style="color: #999; font-size: 14px; margin: 5px 0 15px 0;">菜品描述</p>
+            
+            <div class="spec-section">
+                <div class="spec-section-title">选项 (选择1)</div>
+                <div id="spec-options-list"></div>
+            </div>
+            <div class="spec-section" id="spec-section-2" style="display: none;">
+                <div class="spec-section-title" style="margin-top: 20px;">选项 (选择2)</div>
+                <div id="spec-options-list-2"></div>
+            </div>
+            <div class="spec-footer">
+                <div class="spec-quantity-selector">
+                    <button onclick="changeSpecCount(-1)">−</button>
+                    <span id="spec-count-num">1</span>
+                    <button onclick="changeSpecCount(1)">+</button>
+                </div>
+                <button id="spec-add-btn" onclick="confirmAddToCart()">
+                    <span>添加到购物车</span>
+                    <span id="spec-total-price">RM 0.00</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 85%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+            <div id="custom-alert-text" style="font-size: 16px; color: #333; font-weight: 500; line-height: 1.5; margin-bottom: 24px;">提示内容</div>        
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="custom-alert-cancel" onclick="closeCustomAlert()" style="display: none; background: #eee; color: #555; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; flex: 1; outline: none;">取 消</button>
+                <button id="custom-alert-confirm" style="background: #6d4c41; color: #fff; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; flex: 1; outline: none;">确 定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // A. 自动从网址获取商家ID和桌号
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopId = urlParams.get('shop');
+        const tableId = urlParams.get('table') || '外带'; // 👉 核心：动态抓取 table 参数
+
+        window.myCart = window.myCart || {};
+
+       // 2. 顾客点击“一键下单”的触发函数
+       async function submitOrder(cartItems, totalPrice) {
+       if (!shopId) return alert("店铺参数缺失！");
+    
+        // 生成唯一的订单号（用时间戳）
+        const orderId = "ORD_" + Date.now();
+    
+        // 3. 完美组装商用订单数据包，带上桌号
+        const orderPayload = {
+        orderId: orderId,
+        tableNo: tableId,       // 👉 核心：正式绑定桌号，传入 Firebase
+        items: cartItems,       // 购物车菜品数组
+        totalPrice: totalPrice, // 总计金额
+        status: "pending",      // 默认待处理状态
+        orderTime: new Date().toLocaleString()
+    };
+
+    // 4. 推送到 Firebase 的当前实时订单节点下
+    const targetUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${shopId}/${orderId}.json`;
+    
+    try {
+        const response = await fetch(targetUrl, {
+            method: 'PUT',
+            body: JSON.stringify(orderPayload)
+        });
+        if(response.ok) {
+            alert(`🎉 桌号 [${tableId}] 下单成功！订单已秒传至后厨与收银台。`);
+        }
+    } catch (err) {
+        console.error("订单上传失败", err);
+    }
+}
+        
+
+        // D. 页面初始化渲染菜单 (动态加载重构版)
+        const script = document.createElement('script');
+        script.src = `menus/${shopId}.js`; 
+        script.onload = function() {
+        const currentShop = typeof allShopsData !== 'undefined' ? allShopsData[shopId] : null;
+
+        if (currentShop && window.currentShopMenu) {
+            document.getElementById('shop-name').innerText = currentShop.shopName;
+            if (currentShop.logoUrl) {
+                const logoImg = document.getElementById('shop-logo');
+                logoImg.src = currentShop.logoUrl;
+                logoImg.style.display = 'inline-block';
+            }
+            document.title = `🌟 ${currentShop.shopName} | 电子菜单 🌟`;
+            if (document.getElementById('shop-slogan')) {
+                document.getElementById('shop-slogan').innerText = currentShop.slogan || "欢迎光临，祝您用餐愉快！";
+            }
+            if (document.getElementById('shop-footer')) {
+                document.getElementById('shop-footer').innerText = `© 2026 ${currentShop.shopName} 版权所有`;
+            }
+
+            // 💡 注入核心逻辑：判断并渲染首页的座位号卡片
+            const tableCard = document.getElementById('table-display-card');
+            const tableText = document.getElementById('table-display-text');
+            if (tableCard && tableText) {
+                if (tableId && tableId !== '外带') {
+                    tableText.innerHTML = ` <span style="color: #D2691E; font-size: 1.3rem;">${tableId}</span> 号桌`;
+                    tableCard.style.display = 'flex';
+                } else {
+                    tableText.innerHTML = `🛍️ 状态：外带点餐`;
+                    tableCard.style.display = 'flex';
+                }
+            }
+
+        // 2. 生成搜索栏
+        let menuHtml = `
+            <div class="search-bar-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="menu-search" placeholder="想吃什么？搜搜看..." onkeyup="filterMenu()">
+                </div>
+            </div>
+        `;
+        
+        // 3. 生成菜单卡片列表
+        window.currentShopMenu.forEach(cat => {
+            menuHtml += `<div class="category-title">${cat.categoryTitle}</div>`;
+            menuHtml += `<div class="menu-list">`;
+
+            cat.items.forEach(item => {
+                const safeName = item.name.replace(/(['"])/g, '\\$1');
+                const safeDesc = (item.desc || '').replace(/(['"])/g, '\\$1');
+
+                menuHtml += `
+                    <div class="menu-item" onclick="addToCart('${safeName}', '${item.price}', '${item.imgUrl || ''}', '${safeDesc}')" style="cursor:pointer;">
+                       <img src="${item.imgUrl}" alt="${item.name}" class="item-img">
+                       <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc || '暂无描述'}</div>
+                        </div>
+                        <div class="item-price">${item.price}</div>
+                    </div>
+                `;
+            });
+            menuHtml += `</div>`; 
+        });
+        
+        // 4. 将生成的 HTML 塞进页面的容器里，让菜单显示出来！
+        document.getElementById('menu-container').innerHTML = menuHtml;
+    }
+};
+document.head.appendChild(script);
+
+        // E. 🔍 智能搜索栏过滤模块（完美消除空白与多余标题版）
+        function filterMenu() {
+            const keyword = document.getElementById('menu-search').value.trim().toLowerCase();
+            const menuLists = document.querySelectorAll('.menu-list');
+            
+            // 如果搜索框是空的，恢复正常菜单风格
+            if (keyword === '') {
+                menuLists.forEach(list => {
+                    list.style.display = 'block';
+                    list.style.margin = '';
+                    list.style.padding = ''; 
+                    
+                    const items = list.querySelectorAll('.menu-item');
+                    items.forEach(item => item.style.display = 'flex');
+
+                    const title = list.previousElementSibling;
+                    if (title && title.classList.contains('category-title')) {
+                        title.style.display = 'block';
+                    }
+                });
+                return;
+            }
+
+            // 搜索状态下
+            menuLists.forEach(list => {
+                const items = list.querySelectorAll('.menu-item');
+                let hasVisibleItem = false; 
+
+                items.forEach(item => {
+                    const name = item.querySelector('.item-name').innerText.toLowerCase();
+                    if (name.includes(keyword)) {
+                        item.style.display = 'flex';
+                        hasVisibleItem = true; 
+                    } else {
+                        item.style.display = 'none'; 
+                    }
+                });
+
+                const title = list.previousElementSibling;
+                // 搜索状态下，分类大标题彻底隐形
+                if (title && title.classList.contains('category-title')) {
+                    title.style.display = 'none';
+                }
+
+                if (hasVisibleItem) {
+                    list.style.display = 'block';
+                    list.style.margin = '0';
+                    list.style.padding = '0';
+                } else {
+                    list.style.display = 'none';
+                }
+            });
+        }
+
+        // F. 🍧 规格加料弹窗核心控制引擎
+        let currentSelectingItem = null; 
+        let currentSpecCount = 1;        
+        let selectedOptionIndex = 0; 
+        let selectedOptionIndex2 = 0;    
+
+        // 请在 index.html 找到原本的 addToCart 函数，将这整个函数完全替换
+        function addToCart(name, priceStr, imgUrl, desc) {
+            const basePrice = (priceStr && typeof priceStr.replace === 'function') 
+                ? parseFloat(priceStr.replace(/[^\d.]/g, '')) 
+                : 0;
+                
+            currentSpecCount = 1;
+            selectedOptionIndex = 0; 
+            selectedOptionIndex2 = 0; 
+
+            let targetOptions = [{ label: "默认", extraPrice: 0 }];
+            let targetOptions2 = [];
+
+            try {
+                if (window.currentShopMenu) {
+                    const found = window.currentShopMenu.flatMap(cat => cat.items || []).find(i => i.name === name);
+                    if (found) {
+                        if (found.options && found.options.length > 0) targetOptions = found.options;
+                        if (found.options2 && found.options2.length > 0) targetOptions2 = found.options2;
+                    }
+                }
+            } catch (e) {
+                console.log("💡 提示：正在采用自适应规格");
+            }
+
+            currentSelectingItem = {
+                name: name,
+                basePrice: basePrice,
+                imgUrl: imgUrl || 'images/default-bread.png',
+                desc: desc || '暂无描述',
+                options: targetOptions,
+                options2: targetOptions2
+            };
+
+            // 🧠 核心修复：如果购物车还没初始化，直接建立空对象防止拦截
+            if (typeof myCart === "undefined" || myCart === null) {
+                window.myCart = {};
+            }
+
+            document.getElementById('spec-item-name').innerText = currentSelectingItem.name;
+            document.getElementById('spec-item-desc').innerText = currentSelectingItem.desc;
+            document.getElementById('spec-item-img').src = currentSelectingItem.imgUrl;
+            document.getElementById('spec-count-num').innerText = currentSpecCount;
+
+            let optionsHtml = '';
+            currentSelectingItem.options.forEach((opt, idx) => {
+                optionsHtml += `
+                    <div class="spec-option-row" onclick="selectSpecOption(${idx})">
+                        <div class="spec-option-left">
+                            <input type="radio" name="food-option" id="opt-${idx}" ${idx === 0 ? 'checked' : ''}>
+                            <label for="opt-${idx}" style="cursor:pointer;">${opt.label}</label>
+                        </div>
+                        <div class="spec-option-price">+RM ${opt.extraPrice.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('spec-options-list').innerHTML = optionsHtml;
+
+            const section2 = document.getElementById('spec-section-2');
+            if (section2) { 
+                if (currentSelectingItem.options2 && currentSelectingItem.options2.length > 0) {
+                    section2.style.display = 'block';
+                    let options2Html = '';
+                    currentSelectingItem.options2.forEach((opt, idx) => {
+                        options2Html += `
+                            <div class="spec-option-row" onclick="selectSpecOption2(${idx})">
+                                <div class="spec-option-left">
+                                    <input type="radio" name="food-option-2" id="opt2-${idx}" ${idx === 0 ? 'checked' : ''}>
+                                    <label for="opt2-${idx}" style="cursor:pointer;">${opt.label}</label>
+                                </div>
+                                <div class="spec-option-price">+RM ${opt.extraPrice.toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('spec-options-list-2').innerHTML = options2Html;
+                } else {
+                    section2.style.display = 'none';
+                }
+            }
+
+            updateSpecTotalPrice();
+            document.getElementById('spec-modal').style.display = 'flex';
+        }
+
+        function selectSpecOption(index) {
+            selectedOptionIndex = index;
+            document.getElementById(`opt-${index}`).checked = true;
+            updateSpecTotalPrice();
+        }
+
+        function selectSpecOption2(index) {
+            selectedOptionIndex2 = index;
+            document.getElementById(`opt2-${index}`).checked = true;
+            updateSpecTotalPrice();
+        }
+
+        function changeSpecCount(val) {
+            currentSpecCount += val;
+            if (currentSpecCount < 1) currentSpecCount = 1;
+            document.getElementById('spec-count-num').innerText = currentSpecCount;
+            updateSpecTotalPrice();
+        }
+
+        function updateSpecTotalPrice() {
+            if (!currentSelectingItem) return;
+            const opt = currentSelectingItem.options[selectedOptionIndex];
+            let extraPriceTotal = opt ? opt.extraPrice : 0;
+            
+            if (currentSelectingItem.options2 && currentSelectingItem.options2.length > 0) {
+                const opt2 = currentSelectingItem.options2[selectedOptionIndex2];
+                if (opt2) extraPriceTotal += opt2.extraPrice;
+            }
+            
+            const totalPrice = (currentSelectingItem.basePrice + extraPriceTotal) * currentSpecCount;
+            document.getElementById('spec-total-price').innerText = `RM ${totalPrice.toFixed(2)}`;
+        }
+
+        function closeSpecModal() {
+            document.getElementById('spec-modal').style.display = 'none';
+        }
+
+        function confirmAddToCart() {
+            let baseItemName = document.getElementById('spec-item-name')?.innerText || "未知菜品";
+            let selectedOptionLabel = "";
+            let finalPrice = currentSelectingItem.basePrice;
+
+            if (currentSelectingItem && currentSelectingItem.options) {
+                let opt = currentSelectingItem.options[selectedOptionIndex];
+                if (opt) {
+                    selectedOptionLabel = opt.label;
+                    finalPrice += opt.extraPrice;
+                }
+            }
+
+            let selectedOption2Label = "";
+            if (currentSelectingItem && currentSelectingItem.options2 && currentSelectingItem.options2.length > 0) {
+                let opt2 = currentSelectingItem.options2[selectedOptionIndex2];
+                if (opt2) {
+                    selectedOption2Label = opt2.label;
+                    finalPrice += opt2.extraPrice;
+                }
+            }
+
+            let combinedLabel = [selectedOptionLabel, selectedOption2Label].filter(Boolean).join(' + ');
+            let finalKey = combinedLabel ? `${baseItemName} (${combinedLabel})` : baseItemName;
+            let count = parseInt(document.getElementById('spec-count-num')?.innerText || "1");
+
+            if (typeof myCart !== "undefined") {
+                if (myCart[finalKey]) {
+                    myCart[finalKey].count += count;
+                } else {
+                    myCart[finalKey] = {
+                        count: count,
+                        price: finalPrice,
+                        spec: combinedLabel
+                    };
+                }
+            }
+
+            closeSpecModal();
+            updateCartBadge();
+            renderCartDetails();
+        }
+
+        // G. 🗑️ 购物车商品移除引擎
+        function removeFromCart(name) {
+            if (typeof myCart !== "undefined" && myCart[name]) {
+                delete myCart[name]; 
+                updateCartBadge();
+                renderCartDetails(); 
+            }
+        }
+
+        // H. 🔄 UI 刷新：更新悬浮红点和底部栏
+        function updateCartBadge() {
+            let totalCount = 0;
+            for (let id in myCart) { 
+                totalCount += myCart[id].count; 
+            }
+            
+            const mainCountBadge = document.getElementById('main-cart-count');
+            const cartBadgeCount = document.getElementById('cart-badge-count');
+            
+            if (mainCountBadge) mainCountBadge.innerText = totalCount;
+            if (cartBadgeCount) cartBadgeCount.innerText = totalCount;
+
+            const cartFooterBox = document.querySelector('.footer') || document.getElementById('floating-cart-btn');
+            if (cartFooterBox) {
+                cartFooterBox.style.display = "flex"; 
+            }
+        }
+
+        // I. 🛒 UI 刷新：渲染购物车详细账单
+        function renderCartDetails() {
+           let shopName = "勿忘心 🌟";
+           if (typeof allShopsData !== 'undefined' && allShopsData[shopId]) {
+              shopName = allShopsData[shopId].shopName;
+           }
+    
+           document.getElementById('cart-shop-name').innerText = shopName;
+    
+           document.getElementById('cart-table-number').innerText = (tableId && tableId !== '外带') ? `桌 ${tableId}` : "外带";
+
+           let itemsHtml = '';
+           let subtotal = 0;
+           let totalItemsCount = 0;
+
+            for (let name in myCart) {
+                const item = myCart[name];
+                const itemTotalPrice = item.price * item.count;
+                subtotal += itemTotalPrice;
+                totalItemsCount += item.count;
+                
+                // 拆分商品名和规格选项，让排版分层更整齐
+                let displayName = name;
+                let optionHtml = "";
+                const match = name.match(/(.+?)\s*[\(（](.+?)[\)）]/);
+                if (match) {
+                    displayName = match[1].trim();
+                    optionHtml = `<div style="font-size: 13px; color: #999; margin-top: 4px;">${match[2].trim()}</div>`;
+                }
+
+                itemsHtml += `
+                    <div class="cart-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #FDF5ED;">
+                        <div class="cart-item-info" style="flex: 1; padding-right: 15px;">
+                            <div class="cart-item-name" style="font-size: 15px; font-weight: 500; color: #333; line-height: 1.3;">${displayName}</div>
+                            ${optionHtml}
+                        </div>
+                        
+                       <div style="display: flex; align-items: center; gap: 15px; flex-shrink: 0;">
+                            <span style="color:#999; font-size: 14px;">x${item.count}</span>
+
+                            <span class="cart-item-price" style="font-weight: bold; color: #6d4c41; min-width: 85px; text-align: right; white-space: nowrap;">RM ${(itemTotalPrice).toFixed(2)}</span>
+
+                            <span class="delete-btn" onclick="removeFromCart(\`${name}\`)" style="cursor: pointer; color: #ff4d4f; font-size: 18px; padding: 0 5px; user-select: none;">🗑️</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (itemsHtml === '') itemsHtml = '<div style="padding:20px 0; color:#999; text-align:center;">购物车空空如也</div>';
+            document.getElementById('cart-items-list').innerHTML = itemsHtml;
+
+            // 凑整逻辑与税费计算
+            const sstRate = 0.06;
+            const sstAmount = subtotal * sstRate;
+            const beforeRoundingTotal = subtotal + sstAmount;
+
+            const finalTotal = Math.round(beforeRoundingTotal * 20) / 20;
+            const roundingAmount = finalTotal - beforeRoundingTotal;
+
+            if(document.getElementById('bill-subtotal')) document.getElementById('bill-subtotal').innerText = "RM " + subtotal.toFixed(2);
+            if(document.getElementById('bill-sst')) document.getElementById('bill-sst').innerText = "RM " + sstAmount.toFixed(2);
+            if(document.getElementById('bill-rounding')) document.getElementById('bill-rounding').innerText = (roundingAmount >= 0 ? "+" : "") + "RM " + roundingAmount.toFixed(2);
+
+            const formattedTotal = `RM ${finalTotal.toFixed(2)}`;
+            if(document.getElementById('bill-total')) document.getElementById('bill-total').innerText = formattedTotal;
+            if(document.getElementById('cart-btn-total')) document.getElementById('cart-btn-total').innerText = formattedTotal;
+        }
+
+        // J. 🔔 自定义弹窗控制
+        let onCustomConfirmCallback = null;
+        function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            const textField = document.getElementById('custom-alert-text');
+            const cancelBtn = document.getElementById('custom-alert-cancel');
+            const confirmBtn = document.getElementById('custom-alert-confirm');
+            
+            if (modal && textField) {
+                textField.innerText = text;
+                onCustomConfirmCallback = confirmCallback;
+
+                if (isConfirmMode) {
+                    if (cancelBtn) cancelBtn.style.display = "block";
+                    if (confirmBtn) {
+                        confirmBtn.onclick = function() {
+                            if (typeof onCustomConfirmCallback === "function") onCustomConfirmCallback();
+                            closeCustomAlert();
+                        };
+                    }
+                } else {
+                    if (cancelBtn) cancelBtn.style.display = "none";
+                    if (confirmBtn) {
+                        confirmBtn.onclick = closeCustomAlert;
+                    }
+                }
+                modal.style.display = "flex";
+            }
+        }
+
+        function closeCustomAlert() {
+            const modal = document.getElementById('custom-alert-modal');
+            if (modal) modal.style.display = "none";
+        }
+
+        // K. 打开/关闭购物车页面（补充缺少的界面切换函数）
+        function toggleCartPage(show) {
+            const cartPage = document.getElementById('cart-page');
+            const floatingCart = document.getElementById('floating-cart-btn');
+            
+            if (cartPage) cartPage.style.display = show ? 'flex' : 'none';
+            if (floatingCart) floatingCart.style.display = show ? 'none' : 'flex';
+        }
+
+        // L. 🔥 Firebase 云端订单提交引擎
+        function submitOrderToCloud() {
+            // 🧠 核心修复：防止多层嵌套的 DOM（如 span）导致点击穿透或失效，这里直接执行
+            if (typeof myCart === "undefined" || Object.keys(myCart).length === 0) {
+                showCustomAlert("购物车还是空的哦，先加点好吃的吧！");
+                return;
+            }
+            
+            // 弹出提示并直接绑定确认回调
+            showCustomAlert("确定要提交这份订单到后台吗？", true, function() {
+                executeFirebaseSubmit();
+            });
+        }
+
+        function executeFirebaseSubmit() {
+            let safeCart = {};
+            for (let key in myCart) {
+                let safeKey = key.replace(/[.#$\[\]]/g, '_'); 
+                safeCart[safeKey] = myCart[key];
+            }
+
+            // 🧠 核心修复：将变量改为 tableId，解决未定义导致的崩溃
+            const orderData = {
+                shopId: shopId,
+                tableNumber: tableId || "外带", 
+                items: safeCart, 
+                timestamp: new Date().toISOString(),
+                status: "pending" 
+            };
+
+            const firebaseApiUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json"; 
+
+            fetch(firebaseApiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    showCustomAlert("订单已成功提交！");
+                    
+                    if (typeof myCart === "object" && myCart !== null) {
+                        for (let key in myCart) {
+                            if (myCart.hasOwnProperty(key)) {
+                                delete myCart[key]; 
+                            }
+                        }
+                    }
+                    
+                    updateCartBadge();
+                    renderCartDetails();
+                    toggleCartPage(false);
+                    
+                } else {
+                    showCustomAlert("⚠️ 传送失败，请稍后再试！");
+                }
+            })
+            .catch(error => {
+                console.error("Firebase 错误:", error);
+                showCustomAlert("🚀 网络连接请求失败，请检查网络！");
+            });
+        }
+
+        // 🟢 页面加载后自动执行一次初始化渲染
+        updateCartBadge();
+        renderCartDetails();
+
+    </script>
+</body>
+</html>
