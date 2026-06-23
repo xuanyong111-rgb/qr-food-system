@@ -42,8 +42,32 @@
         .pay-method-label { cursor: pointer; }
         .pay-method-label input { display: none; }
         .pay-method-text { display: inline-block; padding: 6px 14px; border: 1px solid #E6D5C5; border-radius: 20px; font-size: 13px; color: #8B5A2B; background: #FFF; transition: 0.2s; font-weight: bold; }
-        
-        /* 加入 !important 强制变色，确保被选中时必定变成深咖啡色实心按钮 */
+        .keypad-btn {
+            background: #FFFBF7; border: 1px solid #E6D5C5; border-radius: 10px;
+            color: #633E1A; font-size: 22px; font-weight: bold; padding: 15px 0;
+            cursor: pointer; transition: 0.1s; user-select: none;
+        }
+        .keypad-btn {
+            background: #FFFBF7; border: 1px solid #E6D5C5; border-radius: 10px;
+            color: #633E1A; font-size: 22px; font-weight: bold; padding: 15px 0;
+            cursor: pointer; transition: 0.1s; user-select: none;
+        }
+        .keypad-btn:active { background: #E6D5C5; transform: scale(0.92); }
+        .keypad-btn:active { background: #E6D5C5; transform: scale(0.92); }
+        .quick-cash-btn { 
+            padding: 6px 12px; 
+            border: 1px solid #E6D5C5; 
+            background: #FFFBF7; 
+            color: #8B5A2B; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        .quick-cash-btn:hover { background: #E6D5C5; }
+        .exact-btn { background: #8B5A2B; color: #FFF; border: none; }
+        .exact-btn:hover { background: #633E1A; }
         .pay-method-label input:checked + .pay-method-text { 
             background: #8B5A2B !important; 
             color: white !important; 
@@ -59,7 +83,7 @@
             <button class="history-btn" onclick="openHistory()">📜 历史对账</button>
          </div>
     <div class="orders-grid" id="cashier-orders-list"></div>
-    <div id="history-modal" class="modal-mask">
+    <div id="history-modal" class="modal-mask" onclick="if(event.target === this) closeHistory()">
         <div class="history-modal-content">
             <span class="close-history" onclick="closeHistory()">&times;</span>
             <h2 style="color: #8B5A2B; margin-top: 0;">📜 今日记录</h2>
@@ -73,54 +97,85 @@
    
 
     <div id="checkout-modal" class="modal-mask">
-        <div class="modal-content">
-            <h2 style="color: #8B5A2B; margin-top: 0;">💵 收银结算</h2>
-            <div class="modal-row" style="font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                <span>总计需付:</span>
-                <span style="color: #D2691E;">RM <span id="modal-total-amount">0.00</span></span>
-            </div>
-            <div class="modal-row" style="margin-top: 15px; align-items: center;">
-                <span style="font-weight: bold;">支付方式:</span>
-                <div style="display: flex; gap: 8px;">
-                    <label class="pay-method-label">
-                        <input type="radio" name="pay-method" value="现钱" checked onchange="toggleCashInput()">
-                        <span class="pay-method-text">💵 现钱</span>
-                    </label>
-                    <label class="pay-method-label">
-                        <input type="radio" name="pay-method" value="QR支付" onchange="toggleCashInput()">
-                        <span class="pay-method-text">📱 QR</span>
-                    </label>
-                    <label class="pay-method-label">
-                        <input type="radio" name="pay-method" value="卡支付" onchange="toggleCashInput()">
-                        <span class="pay-method-text">💳 刷卡</span>
-                    </label>
+        <div class="modal-content" style="width: 600px; display: flex; text-align: left; gap: 25px; padding: 30px;">
+            
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <h2 style="color: #8B5A2B; margin-top: 0; text-align: center;">💵 收银结算</h2>
+                
+                <div class="modal-row" style="font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <span>总计需付:</span>
+                    <span style="color: #D2691E; font-size: 18px;">RM <span id="modal-total-amount">0.00</span></span>
+                </div>
+                
+                <div class="modal-row" style="margin-top: 15px; align-items: center;">
+                    <span style="font-weight: bold;">支付方式:</span>
+                    <div style="display: flex; gap: 8px;">
+                        <label class="pay-method-label">
+                            <input type="radio" name="pay-method" value="现钱" checked onchange="toggleCashInput()">
+                            <span class="pay-method-text">💵 现钱</span>
+                        </label>
+                        <label class="pay-method-label">
+                            <input type="radio" name="pay-method" value="QR支付" onchange="toggleCashInput()">
+                            <span class="pay-method-text">📱 QR</span>
+                        </label>
+                        <label class="pay-method-label">
+                            <input type="radio" name="pay-method" value="卡支付" onchange="toggleCashInput()">
+                            <span class="pay-method-text">💳 刷卡</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-row" id="quick-cash-row" style="display: flex; gap: 6px; justify-content: flex-end; width: 100%; margin-top: -10px; margin-bottom: 12px;">
+                    <button class="quick-cash-btn" onclick="setQuickCash(10)">RM 10</button>
+                    <button class="quick-cash-btn" onclick="setQuickCash(20)">RM 20</button>
+                    <button class="quick-cash-btn" onclick="setQuickCash(30)">RM 30</button>
+                    <button class="quick-cash-btn" onclick="setQuickCash(50)">RM 50</button>
+                    <button class="quick-cash-btn" onclick="setQuickCash(100)">RM 100</button>
+                </div>
+
+                <div class="modal-row" id="cash-input-row">
+                    <span style="font-weight: bold;">顾客支付:</span>
+                    <div>RM <input type="tel" id="cash-received" class="modal-input" placeholder="0.00" readonly style="cursor: default;"></div>
+                </div>
+
+                <div class="modal-row" id="change-amount-row" style="font-weight: bold; background: #f9f9f9; padding: 10px; border-radius: 6px;">
+                    <span>找零金额:</span>
+                    <span id="change-amount" style="color: #2ecc71; font-size: 18px;">RM 0.00</span>
+                </div>
+
+                <div class="modal-btn-group" style="margin-top: auto;">
+                    <button class="btn-cancel" onclick="closeCheckoutModal()">取消</button>
+                    <button class="btn-confirm" onclick="confirmCheckout()">确认收款</button>
                 </div>
             </div>
-            <div class="modal-row" id="cash-input-row">
-                <span>顾客支付:</span>
-                <div>RM <input type="tel" id="cash-received" class="modal-input" placeholder="0.00" oninput="formatCashInput(this); calculateChange()"></div>
+
+            <div id="pos-keypad-section" style="width: 220px; border-left: 1px dashed #DCC8B7; padding-left: 25px; display: flex; flex-direction: column; justify-content: center;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <button class="keypad-btn" onclick="pressKey('1')">1</button>
+                    <button class="keypad-btn" onclick="pressKey('2')">2</button>
+                    <button class="keypad-btn" onclick="pressKey('3')">3</button>
+                    <button class="keypad-btn" onclick="pressKey('4')">4</button>
+                    <button class="keypad-btn" onclick="pressKey('5')">5</button>
+                    <button class="keypad-btn" onclick="pressKey('6')">6</button>
+                    <button class="keypad-btn" onclick="pressKey('7')">7</button>
+                    <button class="keypad-btn" onclick="pressKey('8')">8</button>
+                    <button class="keypad-btn" onclick="pressKey('9')">9</button>
+                    <button class="keypad-btn" onclick="pressKey('00')">00</button>
+                    <button class="keypad-btn" onclick="pressKey('0')">0</button>
+                    <button class="keypad-btn" onclick="pressKey('BACK')" style="background: #E6D5C5; color: #8B5A2B;">⌫</button>
+                </div>
             </div>
-            <div class="modal-row" id="change-amount-row" style="font-weight: bold; background: #f9f9f9; padding: 10px; border-radius: 6px;">
-                <span>找零金额:</span>
-                <span id="change-amount" style="color: #2ecc71;">RM 0.00</span>
-            </div>
-            <div class="modal-btn-group">
-                <button class="btn-cancel" onclick="closeCheckoutModal()">取消</button>
-                <button class="btn-confirm" onclick="confirmCheckout()">确认收款</button>
-            </div>
+
         </div>
     </div>
 
     <div id="custom-alert-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center;">
-        <div style="background: #FAF6F0; width: 80%; max-width: 300px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div id="custom-alert-text" style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 20px;">提示内容</div>        
-            <button onclick="closeCustomAlert()" style="background: #8B5A2B; color: white; border: none; padding: 10px 30px; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确 定</button>
-        </div>
-    </div>
-    <div id="custom-alert-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center;">
-        <div style="background: #FAF6F0; width: 80%; max-width: 300px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div id="custom-alert-text" style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 20px;">提示内容</div>        
-            <button onclick="closeCustomAlert()" style="background: #8B5A2B; color: white; border: none; padding: 10px 30px; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确 定</button>
+        <div style="background: #FAF6F0; width: 80%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div id="custom-alert-text" style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">提示内容</div>        
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="custom-alert-cancel" onclick="closeCustomAlert()" style="display: none; flex: 1; background: #E6D5C5; color: #633E1A; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">取 消</button>
+                <button id="custom-alert-confirm" style="flex: 1; background: #8B5A2B; color: white; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确 定</button>
+            </div>
         </div>
     </div>
     <iframe id="receipt-print-frame" style="display: none;"></iframe>
@@ -168,33 +223,52 @@
         let activeOrdersData = {};
 
         eventSource.addEventListener('put', function(e) {
-        const parsed = JSON.parse(e.data);
-        if (!parsed || !parsed.data) return;
+            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`)
+            .then(res => res.json())
+            .then(statusData => {
+                if (statusData && statusData.isLocked === true) {
+                    document.body.innerHTML = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#fff0f0; color:#c62828;"><h1 style="font-size:48px; margin-bottom:10px;">🚨 官方依法死锁封号</h1></div>`;
+                    return; 
+                }
 
-        if (parsed.path === "/") {
-        for (let key in parsed.data) {
-            const order = parsed.data[key];
-            // 🎯 数据隔离拦截：只渲染属于当前店铺且未结账的订单
-            if (order && order.status !== "paid" && order.shopId === currentShopId) {
-                activeOrdersData[key] = order;
-                renderCashierCard(key, order);
-            }
-        }
-    } else {
-        const orderId = parsed.path.replace('/', '');
-        const order = parsed.data;
-        
-        // 🎯 越权拦截：如果订单不属于本店，静默拦截
-        if (order.shopId && order.shopId !== currentShopId) return;
+                const parsed = JSON.parse(e.data);
+                if (!parsed) return;
 
-        if (order.status !== "paid") {
-            activeOrdersData[orderId] = order;
-            renderCashierCard(orderId, order);
-        } else {
-            removeCard(orderId);
-        }
-    }
-});
+                if (parsed.path === "/") {
+                    if (!parsed.data) return;
+                    for (let key in parsed.data) {
+                        const order = parsed.data[key];
+                        if (order && order.status !== "paid" && order.shopId === currentShopId) {
+                            activeOrdersData[key] = order;
+                            renderCashierCard(key, order);
+                        }
+                    }
+                } else {
+                    const orderId = parsed.path.replace('/', '');
+                    const order = parsed.data;
+                    
+                    // 🛡️ 处理云端删除指令 (结账归档后)
+                    if (order === null) {
+                        removeCard(orderId);
+                        return;
+                    }
+                    
+                    if (order.shopId && order.shopId !== currentShopId) return;
+
+                    if (order.status !== "paid") {
+                        // 🎯 核心防御：只允许完整订单写入，若是后厨传来的 cooking 状态仅做局部更新
+                        if (order.items) {
+                            activeOrdersData[orderId] = order;
+                            renderCashierCard(orderId, order);
+                        } else if (activeOrdersData[orderId]) {
+                            activeOrdersData[orderId].status = order.status;
+                        }
+                    } else {
+                        removeCard(orderId);
+                    }
+                }
+            });
+        });
 
         function renderCashierCard(orderId, orderData) {
             activeOrdersData[orderId] = orderData;
@@ -238,21 +312,47 @@
             const sstAmount = subtotal * 0.06;
             const finalTotal = Math.round((subtotal + sstAmount) * 20) / 20;
 
-            const cardHtml = `
-                <div class="order-card" id="cashier-card-${orderId}">
-                    <div class="order-header">
-                        <span>订单号: #${orderId.slice(-4)}</span>
-                        <span class="table-num">${orderData.tableNumber || '外带'}</span>
-                    </div>
-                    <div class="order-body">
-                        ${itemsListHtml}
-                        <div class="order-total">总计 (含SST): RM ${finalTotal.toFixed(2)}</div>
+           const cardHtml = `
+            <div class="order-card" id="cashier-card-${orderId}">
+                <div class="order-header">
+                    <span>订单号: #${orderId.slice(-4)}</span>
+                    <span class="table-num">${orderData.tableNumber || '外带'}</span>
                 </div>
-                <button class="pay-btn" onclick="openCheckoutModal('${orderId}', ${finalTotal})">💵 结账收款</button>
+                <div class="order-body">
+                    ${itemsListHtml}
+                    <div class="order-total">总计 (含SST): RM ${finalTotal.toFixed(2)}</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 18px;">
+                    <button onclick="cancelOrder('${orderId}')" style="flex: 1; background: #FFFBF7; color: #e74c3c; border: 1px solid #ffcdd2; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 25px; cursor: pointer;">🚫 取消</button>
+                    <button onclick="openCheckoutModal('${orderId}', ${finalTotal})" style="flex: 2; background: #8B5A2B; color: white; border: none; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 90, 43, 0.2);">💵 结账收款</button>
+                </div>
             </div>
         `;
         listContainer.insertAdjacentHTML('beforeend', cardHtml);
     }
+
+    function cancelOrder(orderId) {
+            showCustomAlert("⚠️ 确定要取消并作废此订单吗？", true, function() {
+                const orderToSave = activeOrdersData[orderId];
+                if (!orderToSave) return;
+                
+                orderToSave.status = "cancelled";
+                orderToSave.cancelTime = new Date().toLocaleString();
+                orderToSave.payMethod = "已作废";
+                orderToSave.finalTotal = 0; 
+                
+                const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
+                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json`;
+                
+                fetch(historyUrl, { method: 'PUT', body: JSON.stringify(orderToSave) })
+                .then(() => {
+                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json`;
+                    fetch(firebaseUpdateUrl, { method: 'DELETE' }).catch(err => console.error(err));
+                    removeCard(orderId);
+                    showCustomAlert("✅ 订单已作废，并软删除归档至历史记录！");
+                });
+            });
+        }
 
     // ====== 替换原本的 checkoutOrder 为以下核心逻辑 ======
     let currentOrderId = null;
@@ -277,6 +377,11 @@ function openCheckoutModal(orderId, total) {
             if (input) input.focus();
         }, 100); 
     }
+    function setQuickCash(amount) {
+        const input = document.getElementById('cash-received');
+        input.value = amount.toFixed(2);
+        calculateChange();
+    }
 
     function toggleCashInput() {
         const checkedMethod = document.querySelector('input[name="pay-method"]:checked');
@@ -284,19 +389,78 @@ function openCheckoutModal(orderId, total) {
         
         const cashRow = document.getElementById('cash-input-row');
         const changeRow = document.getElementById('change-amount-row');
+        const quickCashRow = document.getElementById('quick-cash-row');
+        const posKeypad = document.getElementById('pos-keypad-section'); // 抓取键盘容器
         const cashInput = document.getElementById('cash-received');
 
         if (method === '现钱') {
             if (cashRow) cashRow.style.display = 'flex';
             if (changeRow) changeRow.style.display = 'flex';
+            if (quickCashRow) quickCashRow.style.display = 'flex';
+            if (posKeypad) posKeypad.style.display = 'flex'; // 显示键盘
             if (cashInput) cashInput.value = '';
             calculateChange();
         } else {
             if (cashRow) cashRow.style.display = 'none';
             if (changeRow) changeRow.style.display = 'none';
+            if (quickCashRow) quickCashRow.style.display = 'none';
+            if (posKeypad) posKeypad.style.display = 'none'; // 隐藏键盘
             if (cashInput) cashInput.value = currentTotal.toFixed(2); 
         }
     }
+
+    // 💡 2. 在 Script 里任意位置加入实体键盘的输入控制引擎：
+    function pressKey(val) {
+        const inputEl = document.getElementById('cash-received');
+        // 抓取当前纯数字字符
+        let currentRaw = inputEl.value.replace(/\D/g, '');
+
+        if (val === 'BACK') {
+            currentRaw = currentRaw.slice(0, -1); // 删掉最后一个数字
+        } else {
+            currentRaw += val; // 追加新数字
+        }
+
+        // 结合 POS 标准的无小数点推算逻辑（除以100）
+        if (!currentRaw) {
+            inputEl.value = '';
+        } else {
+            inputEl.value = (parseInt(currentRaw, 10) / 100).toFixed(2);
+        }
+
+        calculateChange();
+    }
+
+    document.addEventListener('keydown', function(event) {
+        const checkoutModal = document.getElementById('checkout-modal');
+        
+        // 🎯 核心防御：只有当收银结算弹窗处于开启状态时，才接管物理键盘操作
+        if (checkoutModal && checkoutModal.style.display === 'flex') {
+            const key = event.key;
+
+            // 1. 映射数字键 (0-9)
+            if (/^[0-9]$/.test(key)) {
+                event.preventDefault();
+                pressKey(key);
+            } 
+            // 2. 映射退格键 (Backspace)
+            else if (key === 'Backspace') {
+                event.preventDefault();
+                pressKey('BACK');
+            } 
+            // 3. 映射回车键 (Enter) -> 快捷确认收款
+            else if (key === 'Enter') {
+                event.preventDefault();
+                confirmCheckout();
+            } 
+            // 4. 映射退出键 (Escape) -> 快捷取消并关闭弹窗
+            else if (key === 'Escape') {
+                event.preventDefault();
+                closeCheckoutModal();
+            }
+        }
+    });
+
     function calculateChange() {
         const received = parseFloat(document.getElementById('cash-received').value) || 0;
         const change = received - currentTotal;
@@ -310,17 +474,17 @@ function openCheckoutModal(orderId, total) {
         }
     }
     function formatCashInput(input) {
-            // 实时剔除所有非数字字符
-            let rawValue = input.value.replace(/\D/g, ''); 
-            
-            if (!rawValue) {
-                input.value = '';
-                return;
-            }
-            
-            // 自动除以 100 并锁定两位小数（输入 500 自动变成 5.00）
-            input.value = (parseInt(rawValue, 10) / 100).toFixed(2); 
+        // 实时剔除所有非数字字符
+        let rawValue = input.value.replace(/\D/g, ''); 
+        
+        if (!rawValue) {
+            input.value = '';
+            return;
         }
+        
+        // 自动除以 100 并锁定两位小数（输入 1500 自动变成 15.00，无需手动按点）
+        input.value = (parseInt(rawValue, 10) / 100).toFixed(2); 
+    }
 
     // 在 confirmCheckout 函数中，替换原本的原生 alert 拦截逻辑
     function closeCheckoutModal() {
@@ -395,20 +559,44 @@ function openCheckoutModal(orderId, total) {
             .catch(err => console.error("网络请求失败:", err));
         }
 
-        let onAlertConfirm = null;
+        let onCustomConfirmCallback = null;
+    
+    function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
+        const modal = document.getElementById('custom-alert-modal');
+        const textField = document.getElementById('custom-alert-text');
+        const cancelBtn = document.getElementById('custom-alert-cancel');
+        const confirmBtn = document.getElementById('custom-alert-confirm');
         
-    function showCustomAlert(msg, callback = null) {
-        document.getElementById('custom-alert-text').innerHTML = msg; // 改用 innerHTML 支持样式
-        document.getElementById('custom-alert-modal').style.display = 'flex';
-        onAlertConfirm = callback;
+        if (modal && textField) {
+            textField.innerHTML = text;
+            onCustomConfirmCallback = confirmCallback;
+
+            // 智能判断：如果是作废订单，显示“取消”与“确定”双按钮
+            if (isConfirmMode) {
+                if (cancelBtn) cancelBtn.style.display = "block";
+                if (confirmBtn) {
+                    confirmBtn.onclick = function() {
+                        // 🛡️ 类型保护：确保传入的确实是个函数才执行
+                        if (typeof onCustomConfirmCallback === "function") {
+                            onCustomConfirmCallback();
+                        }
+                        closeCustomAlert();
+                    };
+                }
+            } else {
+                // 普通提示：隐藏“取消”按钮，只留“确定”
+                if (cancelBtn) cancelBtn.style.display = "none";
+                if (confirmBtn) {
+                    confirmBtn.onclick = closeCustomAlert;
+                }
+            }
+            modal.style.display = "flex";
+        }
     }
 
     function closeCustomAlert() {
-        document.getElementById('custom-alert-modal').style.display = 'none';
-        if (onAlertConfirm) {
-            onAlertConfirm(); // 点击确定时，如果有任务就执行
-            onAlertConfirm = null;
-        }
+        const modal = document.getElementById('custom-alert-modal');
+        if (modal) modal.style.display = "none";
     }
 
     function openHistory() {
@@ -417,17 +605,25 @@ function openCheckoutModal(orderId, total) {
         loadHistoryByDate(todayStr);
     }
 
-    function loadHistoryByDate(dateStr) {
+   function loadHistoryByDate(dateStr) {
         const list = document.getElementById('history-list');
         list.innerHTML = '加载中...';
         
         const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${dateStr}.json`;
         
         fetch(historyUrl).then(res => res.json()).then(data => {
+            // 💡 注入下拉筛选框 (select)
             let dateSelectorHtml = `
-                <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-                    <span style="font-size: 14px; font-weight: bold; color: #8B5A2B;">选择日期:</span>
-                    <input type="date" id="history-date-picker" value="${dateStr}" onchange="loadHistoryByDate(this.value)" style="border: 1px solid #E6D5C5; padding: 6px 10px; border-radius: 10px; font-family: inherit; color: #8B5A2B; font-weight: bold; outline: none;">
+                <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-size: 14px; font-weight: bold; color: #8B5A2B;">日期:</span>
+                        <input type="date" id="history-date-picker" value="${dateStr}" onchange="loadHistoryByDate(this.value)" style="border: 1px solid #E6D5C5; padding: 6px 10px; border-radius: 10px; font-family: inherit; color: #8B5A2B; font-weight: bold; outline: none;">
+                    </div>
+                    <select id="history-type-filter" onchange="filterHistoryType(this.value)" style="border: 1px solid #E6D5C5; padding: 6px 10px; border-radius: 10px; color: #8B5A2B; font-weight: bold; outline: none; background: #FFF;">
+                        <option value="all">全部记录</option>
+                        <option value="success">✅ 成功结账单</option>
+                        <option value="cancelled">🚫 已作废单</option>
+                    </select>
                 </div>
             `;
 
@@ -436,51 +632,72 @@ function openCheckoutModal(orderId, total) {
                 return;
             }
             
-            let html = '';
-        let totalRevenue = 0;
-        let totalCash = 0, totalQR = 0, totalCard = 0;
-        
-        Object.keys(data).reverse().forEach(key => {
-            const order = data[key];
+            let successHtml = '';
+            let cancelledHtml = '';
+            let totalRevenue = 0, totalCash = 0, totalQR = 0, totalCard = 0;
+            let cancelledCount = 0;
+            let successCount = 0;
             
-            // 🛑 核心修复：数据隔离拦截，只处理当前店铺的账单
-            if (order.shopId && order.shopId !== currentShopId) return;
+            Object.keys(data).reverse().forEach(key => {
+                const order = data[key];
+                if (order.shopId && order.shopId !== currentShopId) return;
 
-            const total = order.finalTotal || 0;
-            totalRevenue += total;
+                let itemsStr = '';
+                if (order.items) {
+                    Object.keys(order.items).forEach(itemKey => {
+                        itemsStr += `${itemKey} <span style="color:#D2691E">x${order.items[itemKey].count || 1}</span>；`;
+                    });
+                }
 
-            if (order.payMethod === '现钱') totalCash += total;
-            else if (order.payMethod === 'QR支付') totalQR += total;
-            else if (order.payMethod === '卡支付') totalCard += total;
-
-            let itemsStr = '';
-            if (order.items) {
-                Object.keys(order.items).forEach(itemKey => {
-                    itemsStr += `${itemKey} <span style="color:#D2691E">x${order.items[itemKey].count || 1}</span>；`;
-                });
-            }
-
-            html += `
-                <div class="history-item" style="flex-direction: column; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EFE2D5; padding-bottom: 6px;">
-                        <div>
-                            <div style="font-weight: bold; color: #4A3E3D;">单号: #${key.slice(-4)} | 桌号: ${order.tableNumber || '外带'}</div>
-                            <div style="font-size: 12px; color: #A08875; margin-top: 4px;">时间: ${order.checkoutTime || '-'}</div>
+                if (order.status === 'cancelled') {
+                    cancelledCount++;
+                    cancelledHtml += `
+                        <div class="history-item" style="flex-direction: column; gap: 8px; background: #fff0f0; border: 1px solid #ffcdd2;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ffcdd2; padding-bottom: 6px;">
+                                <div>
+                                    <div style="font-weight: bold; color: #c62828;"><del>单号: #${key.slice(-4)}</del> | 桌号: ${order.tableNumber || '外带'}</div>
+                                    <div style="font-size: 12px; color: #e57373; margin-top: 4px;">时间: ${order.cancelTime || '-'}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: bold; color: #c62828; font-size: 16px;">已作废</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 13px; color: #b71c1c; line-height: 1.4; background: #ffebee; padding: 8px; border-radius: 6px;">
+                                <strong>📋 作废明细：</strong>${itemsStr}
+                            </div>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; color: #D2691E; font-size: 16px;">RM ${total.toFixed(2)}</div>
-                            <div style="font-size: 12px; color: #2ecc71; font-weight: bold; margin-top: 4px;">${order.payMethod || '未知'}</div>
+                    `;
+                } else {
+                    successCount++;
+                    const total = order.finalTotal || 0;
+                    totalRevenue += total;
+
+                    if (order.payMethod === '现钱') totalCash += total;
+                    else if (order.payMethod === 'QR支付') totalQR += total;
+                    else if (order.payMethod === '卡支付') totalCard += total;
+
+                    successHtml += `
+                        <div class="history-item" style="flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EFE2D5; padding-bottom: 6px;">
+                                <div>
+                                    <div style="font-weight: bold; color: #4A3E3D;">单号: #${key.slice(-4)} | 桌号: ${order.tableNumber || '外带'}</div>
+                                    <div style="font-size: 12px; color: #A08875; margin-top: 4px;">时间: ${order.checkoutTime || '-'}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: bold; color: #D2691E; font-size: 16px;">RM ${total.toFixed(2)}</div>
+                                    <div style="font-size: 12px; color: #2ecc71; font-weight: bold; margin-top: 4px;">${order.payMethod || '未知'}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 13px; color: #633E1A; line-height: 1.4; background: #FFFBF7; padding: 8px; border-radius: 6px;">
+                                <strong>📋 菜品明细：</strong>${itemsStr}
+                            </div>
                         </div>
-                    </div>
-                    <div style="font-size: 13px; color: #633E1A; line-height: 1.4; background: #FFFBF7; padding: 8px; border-radius: 6px;">
-                        <strong>📋 菜品明细：</strong>${itemsStr}
-                    </div>
-                </div>
-            `;
-        });
+                    `;
+                }
+            });
             
             let summaryHtml = `
-                <div style="background: #FFF; border: 1px solid #EFE2D5; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(139, 90, 43, 0.05);">
+                <div id="history-summary-box" style="background: #FFF; border: 1px solid #EFE2D5; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(139, 90, 43, 0.05);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #4A3E3D; font-size: 14px;"><span>💵 现钱:</span> <strong>RM ${totalCash.toFixed(2)}</strong></div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #4A3E3D; font-size: 14px;"><span>📱 QR支付:</span> <strong>RM ${totalQR.toFixed(2)}</strong></div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #EFE2D5; padding-bottom: 10px; color: #4A3E3D; font-size: 14px;"><span>💳 刷卡:</span> <strong>RM ${totalCard.toFixed(2)}</strong></div>
@@ -488,53 +705,102 @@ function openCheckoutModal(orderId, total) {
                 </div>
             `;
             
-            list.innerHTML = dateSelectorHtml + summaryHtml + html;
+            let finalOutput = dateSelectorHtml + summaryHtml;
+            
+            finalOutput += `<div id="history-success-section">`;
+            if (successCount > 0) finalOutput += `<h3 style="color: #8B5A2B; margin: 15px 0 10px 0;">✅ 成功结账单 (${successCount})</h3>` + successHtml;
+            finalOutput += `</div>`;
+
+            finalOutput += `<div id="history-cancelled-section">`;
+            if (cancelledCount > 0) finalOutput += `<h3 style="color: #c62828; margin: 15px 0 10px 0;">🚫 已作废单 (${cancelledCount})</h3>` + cancelledHtml;
+            finalOutput += `</div>`;
+
+            list.innerHTML = finalOutput;
+            // 初始化确保按当前下拉框过滤
+            filterHistoryType(document.getElementById('history-type-filter').value);
         });
+    }
+
+    // 4. 搭配的新增过滤引擎
+    function filterHistoryType(type) {
+        const successSec = document.getElementById('history-success-section');
+        const cancelledSec = document.getElementById('history-cancelled-section');
+        const summaryBox = document.getElementById('history-summary-box');
+        
+        if (type === 'all') {
+            if(successSec) successSec.style.display = 'block';
+            if(cancelledSec) cancelledSec.style.display = 'block';
+            if(summaryBox) summaryBox.style.display = 'block';
+        } else if (type === 'success') {
+            if(successSec) successSec.style.display = 'block';
+            if(cancelledSec) cancelledSec.style.display = 'none';
+            if(summaryBox) summaryBox.style.display = 'block';
+        } else if (type === 'cancelled') {
+            if(successSec) successSec.style.display = 'none';
+            if(cancelledSec) cancelledSec.style.display = 'block';
+            if(summaryBox) summaryBox.style.display = 'none'; 
+        }
     }
 
     function closeHistory() {
         document.getElementById('history-modal').style.display = 'none';
     }
     function printReceipt(orderId, orderData, total, method, received, change) {
-        
-        // 动态读取商家数据
         const shopConfig = typeof allShopsData !== 'undefined' ? allShopsData[currentShopId] : {};
-        const shopName = shopConfig && shopConfig.shopName ? shopConfig.shopName : "勿忘心 🌟";
-        // 可以在 shops.js 里面的对应商户中新增一行 `address: "你的真实店铺地址",`
-        const shopAddress = shopConfig && shopConfig.address ? shopConfig.address : "欢迎光临 (请于系统中补充地址)";
+        const shopName = shopConfig && shopConfig.shopName ? shopConfig.shopName : "阳光烘焙坊";
 
-        let html = `<div style="font-family: sans-serif; font-size: 12px; width: 100%; color: #000;">`;
-        html += `<h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;">${shopName}</h3>`;
-        html += `<p style="text-align: center; margin: 0 0 10px 0; font-size: 12px; color: #555;">${shopAddress}</p>`;
-        html += `<p style="text-align: center; margin: 0 0 10px 0; font-weight: bold; border-bottom: 1px dashed #000; padding-bottom: 8px;">收银结账单</p>`;
+        // 统一改用等宽字体 (monospace) 配合 Flex 布局，实现价格与数量的强对齐
+        let html = `<div style="font-family: 'Courier New', Courier, monospace; font-size: 13px; width: 100%; color: #000; line-height: 1.4;">`;
+        html += `<h2 style="text-align: center; margin: 0 0 5px 0; font-size: 18px; font-weight: bold; font-family: sans-serif;">${shopName}</h2>`;
+        html += `<p style="text-align: center; margin: 0 0 10px 0; font-size: 12px; border-bottom: 1px dashed #000; padding-bottom: 8px; font-family: sans-serif;">收银结账单</p>`;
 
-        html += `<p style="margin: 3px 0;">单号: #${orderId.slice(-4)}</p>`;
-        html += `<p style="margin: 3px 0;">桌号: ${orderData.tableNumber || '外带'}</p>`;
-        html += `<p style="margin: 3px 0;">时间: ${new Date().toLocaleString('zh-CN')}</p>`;
-        html += `<hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">`;
+        html += `<div style="margin-bottom: 10px;">`;
+        html += `<div style="display: flex; justify-content: space-between;"><span>单号:</span> <span>#${orderId.slice(-4)}</span></div>`;
+        html += `<div style="display: flex; justify-content: space-between;"><span>桌号:</span> <span>${orderData.tableNumber || '外带'}</span></div>`;
+        html += `<div style="display: flex; justify-content: space-between;"><span>时间:</span> <span>${new Date().toLocaleString('zh-CN', {hour12: false})}</span></div>`;
+        html += `</div>`;
 
+        html += `<div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; margin-bottom: 8px;">`;
         if (orderData.items) {
             for (let key in orderData.items) {
                 const item = orderData.items[key];
                 const count = item.count || 1;
                 const price = item.price || 0;
-                html += `<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">`;
-                html += `<span style="flex: 1; padding-right: 5px;">${key}</span>`;
-                html += `<span>x${count} &nbsp; RM ${(price * count).toFixed(2)}</span></div>`;
+                
+                // 将超长的规格与菜名分离，实现干净的换行
+                let displayName = key;
+                let optionName = "";
+                const match = key.match(/(.+?)\s*[\(（](.+?)[\)）]/);
+                if (match) {
+                    displayName = match[1].trim();
+                    optionName = `(${match[2].trim()})`;
+                }
+                
+                html += `<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">`;
+                html += `<div style="flex: 1; padding-right: 10px;">`;
+                html += `<div style="font-weight: bold; word-break: break-all;">${displayName}</div>`;
+                if (optionName) html += `<div style="font-size: 11px; color: #555; margin-top: 2px;">${optionName}</div>`;
+                html += `</div>`;
+                // 强制锁定右侧的数量和价钱宽度，绝对不会乱跑
+                html += `<div style="display: flex; width: 80px; justify-content: space-between; flex-shrink: 0; padding-top: 1px;">`;
+                html += `<span style="text-align: left;">x${count}</span>`;
+                html += `<span style="text-align: right;">${(price * count).toFixed(2)}</span>`;
+                html += `</div>`;
+                html += `</div>`;
             }
         }
+        html += `</div>`;
 
-        html += `<hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">`;
-        html += `<div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 5px;"><span>总计 (含SST):</span><span>RM ${total.toFixed(2)}</span></div>`;
-        html += `<div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span>支付方式:</span><span>${method}</span></div>`;
+        html += `<div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 6px; font-family: sans-serif;"><span>总计 (含SST):</span><span>RM ${total.toFixed(2)}</span></div>`;
+        html += `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>支付方式:</span><span>${method}</span></div>`;
 
         if (method === '现钱') {
-            html += `<div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span>实收:</span><span>RM ${received.toFixed(2)}</span></div>`;
-            html += `<div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span>找零:</span><span>RM ${change.toFixed(2)}</span></div>`;
+            html += `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>实收:</span><span>RM ${received.toFixed(2)}</span></div>`;
+            html += `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>找零:</span><span>RM ${change.toFixed(2)}</span></div>`;
         }
 
-        html += `<hr style="border: none; border-top: 1px dashed #000; margin: 8px 0;">`;
-        html += `<p style="text-align: center; margin-top: 10px;">谢谢光临，欢迎下次再来！</p>`;
+        html += `<hr style="border: none; border-top: 1px dashed #000; margin: 12px 0 8px 0;">`;
+        html += `<p style="text-align: center; margin: 0; font-size: 12px; font-family: sans-serif;">谢谢光临，欢迎下次再来！</p>`;
         html += `</div>`;
 
         const frame = document.getElementById('receipt-print-frame');
@@ -548,6 +814,7 @@ function openCheckoutModal(orderId, total) {
             frame.contentWindow.print();
         }, 200);
     }
+
     function renderOrderCard(orderData) {
     // orderData 是从 Firebase 抓下来的单个订单对象
     return `
@@ -563,7 +830,7 @@ function openCheckoutModal(orderId, total) {
             </div>
         </div>
     `;
-}s
+}
     </script>
 </body>
 </html>

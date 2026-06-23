@@ -4,7 +4,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <meta charset="UTF-8">
-    <title> 勿忘心 - 后厨出单看板 🍞</title>
+    <title> 后厨出单看板 🍞</title>
     <style>
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #FAF6F0; margin: 20px; color: #4A3E3D; }
@@ -36,6 +36,15 @@
 
     <div style="display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 30px; margin-top: 10px;">
         <h1 class="kitchen-title" style="margin-bottom: 0;">后厨待订单 看板</h1>
+    </div>
+    <div id="custom-alert-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div style="background: #FAF6F0; width: 80%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div id="custom-alert-text" style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">提示内容</div>        
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="custom-alert-cancel" onclick="closeCustomAlert()" style="display: none; flex: 1; background: #E6D5C5; color: #633E1A; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">取 消</button>
+                <button id="custom-alert-confirm" style="flex: 1; background: #8B5A2B; color: white; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确 定</button>
+            </div>
+        </div>
     </div>
     
     <div class="orders-grid" id="kitchen-orders-list"></div>
@@ -80,59 +89,88 @@
             }
         });
 
-const firebaseStreamUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json";
-const eventSource = new EventSource(firebaseStreamUrl);
+        const firebaseStreamUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json";
+        const eventSource = new EventSource(firebaseStreamUrl);
 
-eventSource.addEventListener('put', function(e) {
-    const parsed = JSON.parse(e.data);
-    if (!parsed) return;
+        eventSource.addEventListener('put', function(e) {
+            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`)
+            .then(res => res.json())
+            .then(statusData => {
+                if (statusData && statusData.isLocked === true) {
+                    document.body.innerHTML = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#fff0f0; color:#c62828;"><h1 style="font-size:48px; margin-bottom:10px;">🚨 官方依法死锁封号</h1></div>`;
+                    return; 
+                }
 
-    const path = parsed.path;
-    const data = parsed.data;
+                const parsed = JSON.parse(e.data);
+                if (!parsed) return;
+                const path = parsed.path;
+                const data = parsed.data;
 
-    if (path === "/" && !data) {
-        document.getElementById('kitchen-orders-list').innerHTML = "";
-        return;
-    }
+                if (path === "/" && !data) {
+                    document.getElementById('kitchen-orders-list').innerHTML = "";
+                    return;
+                }
 
-    if (path === "/") {
-        for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-                const singleOrder = data[key];
-                // 🎯 数据隔离拦截：仅推送当前店铺待处理的单子
-                if (singleOrder && singleOrder.shopId === currentShopId && (singleOrder.status === "pending" || singleOrder.status === "cooking")) {
-                    renderOrderCardToKitchen(key, singleOrder);
-                    if (singleOrder.status === "pending") {
-                        onNewOrderArrived(key, singleOrder);
-                        updateOrderStatus(key, "cooking");
+                if (path === "/") {
+                    for (let key in data) {
+                        const singleOrder = data[key];
+                        if (singleOrder && singleOrder.shopId === currentShopId && (singleOrder.status === "pending" || singleOrder.status === "cooking")) {
+                            renderOrderCardToKitchen(key, singleOrder);
+                            if (singleOrder.status === "pending") {
+                                onNewOrderArrived(key, singleOrder);
+                                updateOrderStatus(key, "cooking");
+                            }
+                        }
+                    }
+                } else {
+                    const orderId = path.replace('/', '');
+                    if (data === null) {
+                        const card = document.getElementById(`card-${orderId}`);
+                        if (card) card.remove();
+                        return; 
+                    }
+                    
+                    // 🛡️ 核心防御：过滤碎片数据，后厨引擎只处理带有 items 的新订单
+                    if (data.items && data.shopId === currentShopId && data.status === "pending") {
+                        onNewOrderArrived(orderId, data);
+                        renderOrderCardToKitchen(orderId, data);
+                        updateOrderStatus(orderId, "cooking");
                     }
                 }
-            }
-        }
-    } else {
-        const orderId = path.replace('/', '');
-        
-        if (data === null) {
-            const card = document.getElementById(`card-${orderId}`);
-            if (card) card.remove();
-            return; 
-        }
+            });
+        });
 
-        // 🎯 越权拦截：防止被其他店的推送冲刷
-        if (data.shopId && data.shopId !== currentShopId) return;
-
-        if (data && data.status === "pending") {
-            onNewOrderArrived(orderId, data);
-            renderOrderCardToKitchen(orderId, data);
-            updateOrderStatus(orderId, "cooking");
+       function cancelOrderKitchen(orderId) {
+            showCustomAlert("⚠️ 确定要取消并作废此订单吗？<br><span style='font-size:13px;color:#888;font-weight:normal;'>作废后将软删除并移至历史记录。</span>", true, function() {
+                
+                const orderToSave = window.kitchenActiveOrders[orderId];
+                if (!orderToSave) return;
+                
+                orderToSave.status = "cancelled";
+                orderToSave.cancelTime = new Date().toLocaleString();
+                
+                const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
+                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json`;
+                
+                fetch(historyUrl, { method: 'PUT', body: JSON.stringify(orderToSave) })
+                .then(() => {
+                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json`;
+                    fetch(firebaseUpdateUrl, { method: 'DELETE' }).catch(err => console.error(err));
+                    
+                    const card = document.getElementById(`card-${orderId}`);
+                    if (card) card.remove();
+                });
+            }); 
         }
-    }
-});
 
         // ==========================================
         // 2. 看板卡片渲染模块
         // ==========================================
         function renderOrderCardToKitchen(orderId, orderData) {
+            // 💡 必须缓存当前订单数据，否则取消时找不到数据归档
+            if (!window.kitchenActiveOrders) window.kitchenActiveOrders = {};
+            window.kitchenActiveOrders[orderId] = orderData;
+
             if (document.getElementById(`card-${orderId}`)) return;
 
             const listContainer = document.getElementById('kitchen-orders-list');
@@ -153,17 +191,17 @@ eventSource.addEventListener('put', function(e) {
                         }
 
                         itemsListHtml += `
-                            <div class="order-item" style="border-bottom: 1px dashed #FDF5ED; padding: 10px 0; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start;">
-                                <div style="flex: 1; padding-right: 15px;">
-                                <div style="font-size: 15px; font-weight: bold; color: #4A3E3D; line-height: 1.3;">${displayName}</div>
-                                ${optionHtml}
+                            <div class="order-item">
+                                <div class="item-main">
+                                    <span>${displayName}</span> 
+                                    <span class="item-qty">x${count}</span>
+                                </div>
+                                ${optionHtml} 
                             </div>
-                            <div style="color: #D2691E; font-weight: bold; font-size: 16px; flex-shrink: 0; text-align: right; min-width: 35px;">x${count}</div>
-                        </div>
-                    `;
+                        `;
+                    }
                 }
             }
-        }
 
             const remarkHtml = orderData.remark ? `<div class="order-remark">📌 备注：${orderData.remark}</div>` : "";
 
@@ -177,12 +215,15 @@ eventSource.addEventListener('put', function(e) {
                         ${itemsListHtml}
                         ${remarkHtml}
                     </div>
-                    <button class="done-btn" onclick="completeOrder('${orderId}')">完成出单</button>
+                    <div style="display: flex; gap: 10px; margin-top: 18px;">
+                        <button onclick="cancelOrderKitchen('${orderId}')" style="flex: 1; background: #FFFBF7; color: #e74c3c; border: 1px solid #ffcdd2; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 25px; cursor: pointer;">🚫 取消</button>
+                        <button class="done-btn" onclick="completeOrder('${orderId}')" style="flex: 2; margin-top: 0;">完成出单</button>
+                    </div>
                 </div>
             `;
             listContainer.insertAdjacentHTML('beforeend', cardHtml);
         }
-
+        
         // ==========================================
         // 3. 状态控制与交互引擎
         // ==========================================
@@ -264,33 +305,55 @@ eventSource.addEventListener('put', function(e) {
             }
             
             let html = '';
-            let totalCount = 0;
+        let cancelledHtml = '';
+        let totalCount = 0;
+        let cancelledCount = 0;
+        
+        Object.keys(data).reverse().forEach(key => {
+            const order = data[key];
+            if (order.shopId && order.shopId !== currentShopId) return;
             
-            Object.keys(data).reverse().forEach(key => {
-                const order = data[key];
-                
-                // 🛑 核心修复：数据隔离拦截，过滤掉非本店的后厨记录
-                if (order.shopId && order.shopId !== currentShopId) return;
-                
+            let itemsStr = '';
+            if(order.items) {
+                Object.keys(order.items).forEach(itemKey => {
+                    itemsStr += `${itemKey} <span style="color:#D2691E">x${order.items[itemKey].count || 1}</span><br>`;
+                });
+            }
+            
+            if (order.status === 'cancelled') {
+                cancelledCount++;
+                cancelledHtml += `
+                    <div class="history-item" style="flex-direction: column; background: #fff0f0; border: 1px solid #ffcdd2;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ffcdd2; padding-bottom: 8px; margin-bottom: 8px;">
+                            <div style="font-weight: bold; color: #c62828;"><del>单号: #${key.slice(-4)}</del> | 桌号: ${order.tableNumber || '外带'}</div>
+                            <div style="font-size: 13px; color: #e57373;">${order.cancelTime || '-'}</div>
+                        </div>
+                        <div style="font-size: 14px; color: #b71c1c; line-height: 1.5;">${itemsStr}</div>
+                        <div style="margin-top: 6px; font-size: 13px; font-weight: bold; color: #c62828;">🚫 已作废</div>
+                    </div>
+                `;
+            } else {
                 totalCount++;
-                let itemsStr = '';
-                if(order.items) {
-                    Object.keys(order.items).forEach(itemKey => {
-                        itemsStr += `${itemKey} <span style="color:#D2691E">x${order.items[itemKey].count || 1}</span><br>`;
-                    });
-                }
                 html += `
                     <div class="history-item" style="flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EFE2D5; padding-bottom: 8px; margin-bottom: 8px;">
                             <div style="font-weight: bold; color: #4A3E3D;">单号: #${key.slice(-4)} | 桌号: ${order.tableNumber || '外带'}</div>
-                            <div style="font-size: 13px; color: #A08875;">${order.checkoutTime || '-'}</div>
+                            <div style="font-size: 13px; color: #A08875;">${order.checkoutTime || order.orderTime || '-'}</div>
                         </div>
                         <div style="font-size: 14px; color: #633E1A; line-height: 1.5;">${itemsStr}</div>
                     </div>
                 `;
-            });
-            
-            list.innerHTML = dateSelectorHtml + `<div style="font-size: 16px; font-weight: bold; color: #8B5A2B; margin-bottom: 15px;">` + `✅ 当日已完成: ${totalCount} 单</div>` + html;
+            }
+        });
+        
+        let displayHtml = dateSelectorHtml;
+        if (totalCount > 0 || cancelledCount === 0) {
+            displayHtml += `<div style="font-size: 16px; font-weight: bold; color: #8B5A2B; margin-bottom: 15px;">✅ 当日已完成: ${totalCount} 单</div>` + html;
+        }
+        if (cancelledCount > 0) {
+            displayHtml += `<div style="font-size: 16px; font-weight: bold; color: #c62828; margin: 20px 0 15px 0;">🚫 当日已作废: ${cancelledCount} 单</div>` + cancelledHtml;
+        }
+        list.innerHTML = displayHtml;
         });
     }
 
@@ -313,4 +376,23 @@ eventSource.addEventListener('put', function(e) {
         </div>
     `;
 }
+let onCustomConfirmCallback = null;
+    function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
+        const modal = document.getElementById('custom-alert-modal');
+        document.getElementById('custom-alert-text').innerHTML = text;
+        onCustomConfirmCallback = confirmCallback;
+        
+        document.getElementById('custom-alert-cancel').style.display = isConfirmMode ? 'block' : 'none';
+        document.getElementById('custom-alert-confirm').onclick = function() {
+            if (isConfirmMode && typeof onCustomConfirmCallback === "function") {
+                onCustomConfirmCallback();
+            }
+            closeCustomAlert();
+        };
+        if (modal) modal.style.display = "flex";
+    }
+    function closeCustomAlert() {
+        const modal = document.getElementById('custom-alert-modal');
+        if (modal) modal.style.display = "none";
+    }
 </script>

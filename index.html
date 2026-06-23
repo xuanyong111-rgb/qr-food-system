@@ -65,11 +65,11 @@
     </div> 
     
     <div class="floating-cart" onclick="toggleCartPage(true)" id="floating-cart-btn">
-        <img src="images/wuwangxin_A🌟/勿忘心.png" alt="购物车" class="cart-icon-img">
+        <img src="images/wuwangxin_a/勿忘心.png" alt="购物车" class="cart-icon-img">
         <span id="main-cart-count">0</span>
     </div>
 
-    <div id="spec-modal" class="spec-modal-mask" style="display: none;">
+    <div id="spec-modal" class="spec-modal-mask" style="display: none;" onclick="if(event.target === this) closeSpecModal()">
         <div class="spec-modal-content">
             <span class="spec-close-btn" onclick="closeSpecModal()">&times;</span>
             
@@ -112,8 +112,12 @@
     <script>
         // A. 自动从网址获取商家ID和桌号
         const urlParams = new URLSearchParams(window.location.search);
-        const shopId = urlParams.get('shop');
-        const tableId = urlParams.get('table') || '外带'; // 👉 核心：动态抓取 table 参数
+
+        // 🎯 核心修改：使用 let 声明，若网址没带 shop 参数则强制默认进入 wuwangxin_a
+        let shopId = urlParams.get('shop') || 'wuwangxin_a';
+        if (shopId === 'null') shopId = 'wuwangxin_a';
+
+        const tableId = urlParams.get('table') || '外带'; 
 
         window.myCart = window.myCart || {};
 
@@ -152,77 +156,88 @@
         
 
         // D. 页面初始化渲染菜单 (动态加载重构版)
-        const script = document.createElement('script');
-        script.src = `menus/${shopId}.js`; 
-        script.onload = function() {
-        const currentShop = typeof allShopsData !== 'undefined' ? allShopsData[shopId] : null;
-
-        if (currentShop && window.currentShopMenu) {
-            document.getElementById('shop-name').innerText = currentShop.shopName;
-            if (currentShop.logoUrl) {
-                const logoImg = document.getElementById('shop-logo');
-                logoImg.src = currentShop.logoUrl;
-                logoImg.style.display = 'inline-block';
-            }
-            document.title = `🌟 ${currentShop.shopName} | 电子菜单 🌟`;
-            if (document.getElementById('shop-slogan')) {
-                document.getElementById('shop-slogan').innerText = currentShop.slogan || "欢迎光临，祝您用餐愉快！";
-            }
-            if (document.getElementById('shop-footer')) {
-                document.getElementById('shop-footer').innerText = `© 2026 ${currentShop.shopName} 版权所有`;
-            }
-
-            // 💡 注入核心逻辑：判断并渲染首页的座位号卡片
-            const tableCard = document.getElementById('table-display-card');
-            const tableText = document.getElementById('table-display-text');
-            if (tableCard && tableText) {
-                if (tableId && tableId !== '外带') {
-                    tableText.innerHTML = ` <span style="color: #D2691E; font-size: 1.3rem;">${tableId}</span> 号桌`;
-                    tableCard.style.display = 'flex';
-                } else {
-                    tableText.innerHTML = `🛍️ 状态：外带点餐`;
-                    tableCard.style.display = 'flex';
-                }
-            }
-
-        // 2. 生成搜索栏
-        let menuHtml = `
-            <div class="search-bar-container">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="menu-search" placeholder="想吃什么？搜搜看..." onkeyup="filterMenu()">
-                </div>
-            </div>
-        `;
+        if (!shopId || shopId === 'null') {
+            shopId = 'wuwangxin_a';
+        }
         
-        // 3. 生成菜单卡片列表
-        window.currentShopMenu.forEach(cat => {
-            menuHtml += `<div class="category-title">${cat.categoryTitle}</div>`;
-            menuHtml += `<div class="menu-list">`;
+        const script = document.createElement('script'); 
+        script.src = `menus/${shopId}.js`; 
 
-            cat.items.forEach(item => {
-                const safeName = item.name.replace(/(['"])/g, '\\$1');
-                const safeDesc = (item.desc || '').replace(/(['"])/g, '\\$1');
+        // 2. 加载成功时的逻辑
+        script.onload = function() {
+            const currentShop = typeof allShopsData !== 'undefined' ? allShopsData[shopId] : null;
 
-                menuHtml += `
-                    <div class="menu-item" onclick="addToCart('${safeName}', '${item.price}', '${item.imgUrl || ''}', '${safeDesc}')" style="cursor:pointer;">
-                       <img src="${item.imgUrl}" alt="${item.name}" class="item-img">
-                       <div class="item-info">
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-desc">${item.desc || '暂无描述'}</div>
+            if (currentShop && window.currentShopMenu) {
+                document.getElementById('shop-name').innerText = currentShop.shopName;
+                if (currentShop.logoUrl) {
+                    const logoImg = document.getElementById('shop-logo');
+                    logoImg.src = currentShop.logoUrl;
+                    logoImg.style.display = 'inline-block';
+                }
+                document.title = `🌟 ${currentShop.shopName} | 电子菜单 🌟`;
+                if (document.getElementById('shop-slogan')) {
+                    document.getElementById('shop-slogan').innerText = currentShop.slogan || "欢迎光临，祝您用餐愉快！";
+                }
+                if (document.getElementById('shop-footer')) {
+                    document.getElementById('shop-footer').innerText = `© 2026 ${currentShop.shopName} 版权所有`;
+                }
+
+                const tableCard = document.getElementById('table-display-card');
+                const tableText = document.getElementById('table-display-text');
+                if (tableCard && tableText) {
+                    if (tableId && tableId !== '外带') {
+                        tableText.innerHTML = ` <span style="color: #D2691E; font-size: 1.3rem;">${tableId}</span> 号桌`;
+                        tableCard.style.display = 'flex';
+                    } else {
+                        tableText.innerHTML = `🛍️ 状态：外带点餐`;
+                        tableCard.style.display = 'flex';
+                    }
+                }
+
+                let menuHtml = `
+                    <div class="search-bar-container">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="menu-search" placeholder="想吃什么？搜搜看..." onkeyup="filterMenu()">
                         </div>
-                        <div class="item-price">${item.price}</div>
                     </div>
                 `;
-            });
-            menuHtml += `</div>`; 
-        });
-        
-        // 4. 将生成的 HTML 塞进页面的容器里，让菜单显示出来！
-        document.getElementById('menu-container').innerHTML = menuHtml;
-    }
-};
-document.head.appendChild(script);
+                
+                window.currentShopMenu.forEach(cat => {
+                    menuHtml += `<div class="category-title">${cat.categoryTitle}</div>`;
+                    menuHtml += `<div class="menu-list">`;
+
+                    cat.items.forEach(item => {
+                        const safeName = item.name.replace(/(['"])/g, '\\$1');
+                        const safeDesc = (item.desc || '').replace(/(['"])/g, '\\$1');
+
+                        menuHtml += `
+                            <div class="menu-item" onclick="addToCart('${safeName}', '${item.price}', '${item.imgUrl || ''}', '${safeDesc}')" style="cursor:pointer;">
+                               <img src="${item.imgUrl}" alt="${item.name}" class="item-img" onerror="this.src='images/wuwangxin_a/勿忘心.png'">
+                               <div class="item-info">
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-desc">${item.desc || '暂无描述'}</div>
+                                </div>
+                                <div class="item-price">${item.price}</div>
+                            </div>
+                        `;
+                    });
+                    menuHtml += `</div>`; 
+                });
+                
+                document.getElementById('menu-container').innerHTML = menuHtml;
+            }
+        };
+
+        // 3. 🚨 加载失败时的防卡死逻辑 (新增)
+        script.onerror = function() {
+            document.getElementById('shop-name').innerText = "菜单加载失败 ❌";
+            document.getElementById('shop-slogan').innerHTML = `找不到菜单文件 <strong style="color:red;">menus/${shopId}.js</strong><br>请检查服务器文件是否上传完整！`;
+            document.getElementById('shop-slogan').style.color = "#c62828";
+        };
+
+        // 4. 将标签插入页面，开始加载
+        document.head.appendChild(script);
 
         // E. 🔍 智能搜索栏过滤模块（完美消除空白与多余标题版）
         function filterMenu() {

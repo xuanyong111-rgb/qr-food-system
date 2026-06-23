@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> 勿忘心 🌟中控台</title>
+    <title> 中控台 </title>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .login-box { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 380px; text-align: center; border: 1px solid #eef2f5; box-sizing: border-box; }
@@ -156,17 +156,10 @@
                     const statusResponse = await fetch(lockCheckUrl);
                     const statusData = await statusResponse.json();
                     
-                    if (statusData) {
-                        if (statusData.isLocked === true) {
-                            errorEl.innerText = `❌ 官方制裁：该商户已被中控台依法锁死！\n原因：${statusData.reason || '违规或未按时缴纳系统费'}`;
-                            errorEl.style.display = 'block';
-                            return; 
-                        }
-                    } else {
-                        await fetch(lockCheckUrl, {
-                            method: 'PUT',
-                            body: JSON.stringify({ isLocked: false, reason: "未按时缴纳系统维护费" })
-                        });
+                    if (statusData && statusData.isLocked === true) {
+                        errorEl.innerText = `❌ 官方制裁：该商户已被中控台依法锁死！\n原因：${statusData.reason || '违规或未按时缴纳系统费'}`;
+                        errorEl.style.display = 'block';
+                        return; 
                     }
                 } catch (statusErr) {
                     console.error("安全监控链中断", statusErr);
