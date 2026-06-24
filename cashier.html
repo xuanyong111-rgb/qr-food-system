@@ -182,15 +182,15 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const currentShopId = urlParams.get('shop');
+        const sysToken = localStorage.getItem(`sys_token_${currentShopId}`);
 
-        // 🛡️ 1. 静态防御：防止外部直连绕过登入 (原有逻辑保持不变)
-        if (!currentShopId || localStorage.getItem(`token_${currentShopId}`) !== 'authenticated') {
+            if (!currentShopId || localStorage.getItem(`token_${currentShopId}`) !== 'authenticated' || !sysToken) {
             alert('非法访问，请先从中控台登入！');
             window.location.href = `login.html?shop=${currentShopId || ''}`;
         }
 
         // 🚨 2. 动态防御：云端死锁实时监听引擎 (新增这整段)
-        const lockMonitorUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`;
+        const lockMonitorUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json?auth=${sysToken}`;
         const lockEventSource = new EventSource(lockMonitorUrl);
 
         lockEventSource.addEventListener('put', function(e) {
@@ -217,13 +217,13 @@
             }
         });
 
-        const firebaseStreamUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json";
+        const firebaseStreamUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json?auth=${sysToken}`;
         const eventSource = new EventSource(firebaseStreamUrl);
 
         let activeOrdersData = {};
 
         eventSource.addEventListener('put', function(e) {
-            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`)
+            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json?auth=${sysToken}`)
             .then(res => res.json())
             .then(statusData => {
                 if (statusData && statusData.isLocked === true) {
@@ -342,11 +342,11 @@
                 orderToSave.finalTotal = 0; 
                 
                 const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
-                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json`;
+                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json?auth=${sysToken}`;
                 
                 fetch(historyUrl, { method: 'PUT', body: JSON.stringify(orderToSave) })
                 .then(() => {
-                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json`;
+                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`;
                     fetch(firebaseUpdateUrl, { method: 'DELETE' }).catch(err => console.error(err));
                     removeCard(orderId);
                     showCustomAlert("✅ 订单已作废，并软删除归档至历史记录！");
@@ -492,7 +492,7 @@ function openCheckoutModal(orderId, total) {
         if (modal) modal.style.display = 'none';
     }
 
-    function confirmCheckout() {
+   function confirmCheckout() {
         const received = parseFloat(document.getElementById('cash-received').value) || 0;
         if (received < currentTotal) {
             showCustomAlert("实收金额不足，无法结账！");
@@ -516,13 +516,13 @@ function openCheckoutModal(orderId, total) {
             // 3. 呼叫打印收据
             printReceipt(currentOrderId, orderToSave, currentTotal, method, received, change);
             
-            // 4. 将订单转移到历史记录区，并从工作台删除
+            // 4. 将订单转移到历史记录区，并从工作台删除（已精准焊上 ?auth=${sysToken} 安全防御小尾巴）
             const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
-            const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${currentOrderId}.json`;
+            const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${currentOrderId}.json?auth=${sysToken}`;
             
             fetch(historyUrl, { method: 'PUT', body: JSON.stringify(orderToSave) })
             .then(() => {
-                const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${currentOrderId}.json`;
+                const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${currentOrderId}.json?auth=${sysToken}`;
                 fetch(firebaseUpdateUrl, { method: 'DELETE' }).catch(err => console.error(err));
             });
         }
@@ -609,9 +609,16 @@ function openCheckoutModal(orderId, total) {
         const list = document.getElementById('history-list');
         list.innerHTML = '加载中...';
         
-        const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${dateStr}.json`;
+        // 🚨 核心修复：补上密匙小尾巴 ?auth=${sysToken}
+        const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${dateStr}.json?auth=${sysToken}`;
         
         fetch(historyUrl).then(res => res.json()).then(data => {
+            // 🚨 核心修复：拦截无权限或报错的脏数据，彻底消灭 #rror 乱码
+            if (data && data.error) {
+                list.innerHTML = `<div style="text-align:center; color:red; margin-top: 20px;">抓取失败: ${data.error}</div>`;
+                return;
+            }
+
             // 💡 注入下拉筛选框 (select)
             let dateSelectorHtml = `
                 <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">

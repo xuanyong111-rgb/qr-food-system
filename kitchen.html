@@ -53,16 +53,16 @@
 
     <script>
        const urlParams = new URLSearchParams(window.location.search);
-        const currentShopId = urlParams.get('shop');
+       const currentShopId = urlParams.get('shop');
+       const sysToken = localStorage.getItem(`sys_token_${currentShopId}`);
 
-        // 🛡️ 1. 静态防御：防止外部直连绕过登入 (原有逻辑保持不变)
-        if (!currentShopId || localStorage.getItem(`token_${currentShopId}`) !== 'authenticated') {
+            if (!currentShopId || localStorage.getItem(`token_${currentShopId}`) !== 'authenticated' || !sysToken) {
             alert('非法访问，请先从中控台登入！');
             window.location.href = `login.html?shop=${currentShopId || ''}`;
         }
 
         // 🚨 2. 动态防御：云端死锁实时监听引擎 (新增这整段)
-        const lockMonitorUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`;
+        const lockMonitorUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json?auth=${sysToken}`;
         const lockEventSource = new EventSource(lockMonitorUrl);
 
         lockEventSource.addEventListener('put', function(e) {
@@ -89,11 +89,11 @@
             }
         });
 
-        const firebaseStreamUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json";
+        const firebaseStreamUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json?auth=${sysToken}`;
         const eventSource = new EventSource(firebaseStreamUrl);
 
         eventSource.addEventListener('put', function(e) {
-            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`)
+            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json?auth=${sysToken}`)
             .then(res => res.json())
             .then(statusData => {
                 if (statusData && statusData.isLocked === true) {
@@ -150,11 +150,11 @@
                 orderToSave.cancelTime = new Date().toLocaleString();
                 
                 const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
-                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json`;
+                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json?auth=${sysToken}`;
                 
                 fetch(historyUrl, { method: 'PUT', body: JSON.stringify(orderToSave) })
                 .then(() => {
-                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json`;
+                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`;
                     fetch(firebaseUpdateUrl, { method: 'DELETE' }).catch(err => console.error(err));
                     
                     const card = document.getElementById(`card-${orderId}`);
@@ -263,13 +263,22 @@
         }
         
         function updateOrderStatus(orderId, newStatus) {
-            const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json`;
-            fetch(firebaseUpdateUrl, {
-                method: 'PATCH', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            }).catch(err => console.error("状态更新失败:", err));
-        }
+    // ⚠️ 之前这里的 URL 结尾大概率是 .json"，现在必须改成 .json?auth=${sysToken}
+    const updateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`;
+    
+    fetch(updateUrl, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("更新状态失败");
+        console.log("订单状态已更新:", newStatus);
+    })
+    .catch(error => {
+        console.error("后厨更新报错:", error);
+        alert("状态更新失败，请检查网络或刷新页面！");
+    });
+}
 
         // 💡 需要加回的代码：刚才覆盖时可能不小心删掉了这个函数
         function completeOrder(orderId) {

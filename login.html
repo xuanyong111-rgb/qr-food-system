@@ -1,41 +1,192 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> 中控台 </title>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-box { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 380px; text-align: center; border: 1px solid #eef2f5; box-sizing: border-box; }
-        .input-group { text-align: left; margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; font-weight: bold; }
-        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; transition: border-color 0.2s; }
-        .input-group input:focus { border-color: #8B5A2B; outline: none; }
-        button { width: 100%; padding: 12px; background: #8B5A2B; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #704923; }
-        
-        .hub-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 40px 20px; box-sizing: border-box; display: none; }
-        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid #eef2f5;
+            box-sizing: border-box;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: #8B5A2B;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #8B5A2B;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #704923;
+        }
+
+        .hub-container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            display: none;
+        }
+
         /* ✨ 重新优化的 Flex 头部布局，右边放置精简小按钮 */
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eef2f5; padding-bottom: 20px; margin-bottom: 30px; }
-        .header-text { text-align: left; }
-        .header h1 { color: #8B5A2B; margin: 0 0 5px 0; font-size: 26px; }
-        .header p { margin: 0; color: #888; font-size: 14px; }
-        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eef2f5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .header h1 {
+            color: #8B5A2B;
+            margin: 0 0 5px 0;
+            font-size: 26px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #888;
+            font-size: 14px;
+        }
+
         /* ✨ 精致微型浅色退出按钮 */
-        .logout-btn { width: auto; padding: 6px 12px; background: #fbe9e7; color: #d32f2f; border: 1px solid #ffccbc; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .logout-btn:hover { background: #d32f2f; color: white; border-color: #d32f2f; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
-        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eef2f5; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; text-decoration: none; display: block; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: #8B5A2B; }
-        .card h3 { margin: 0 0 10px 0; color: #8B5A2B; font-size: 20px; }
-        .card p { margin: 0; color: #666; font-size: 14px; line-height: 1.5; }
-        .tag { display: inline-block; padding: 4px 8px; background: #eef2f5; color: #666; font-size: 11px; border-radius: 4px; margin-top: 15px; font-weight: bold; }
-        .tag.active { background: #e8f5e9; color: #2e7d32; }
+        .logout-btn {
+            width: auto;
+            padding: 6px 12px;
+            background: #fbe9e7;
+            color: #d32f2f;
+            border: 1px solid #ffccbc;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+            color: white;
+            border-color: #d32f2f;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eef2f5;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            border-color: #8B5A2B;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: #8B5A2B;
+            font-size: 20px;
+        }
+
+        .card p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #eef2f5;
+            color: #666;
+            font-size: 11px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .tag.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
     </style>
     <script src="shops.js"></script>
 </head>
+
 <body>
 
     <div class="login-box" id="login-layer">
@@ -49,7 +200,9 @@
             <input type="password" id="pwd-input" placeholder="输入访问密码">
         </div>
         <button onclick="handleLogin()">安全登入</button>
-        <div id="error-msg" style="color: #e74c3c; font-size: 13px; font-weight: bold; margin-top: 15px; display: none; line-height: 1.4;"></div>
+        <div id="error-msg"
+            style="color: #e74c3c; font-size: 13px; font-weight: bold; margin-top: 15px; display: none; line-height: 1.4;">
+        </div>
     </div>
 
     <div class="hub-container" id="hub-layer">
@@ -60,7 +213,7 @@
             </div>
             <button class="logout-btn" onclick="handleLogout()">登出</button>
         </div>
-        
+
         <div class="grid">
             <a class="card" id="link-cashier" href="#">
                 <h3>💰收银系统 (POS)</h3>
@@ -81,6 +234,7 @@
     </div>
 
     <script>
+        const FIREBASE_API_KEY = " AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY "
         const urlParams = new URLSearchParams(window.location.search);
         const shopId = urlParams.get('shop');
 
@@ -121,10 +275,10 @@
         }
 
         function showHubLayer(shopConfig) {
-            document.body.style.display = "block"; 
+            document.body.style.display = "block";
             document.getElementById('login-layer').style.display = "none";
             document.getElementById('hub-layer').style.display = "block";
-            
+
             document.getElementById('shop-title').innerText = shopConfig.shopName + " · 商业生态圈";
             document.getElementById('link-cashier').href = `cashier.html?shop=${shopId}`;
             document.getElementById('link-kitchen').href = `kitchen.html?shop=${shopId}`;
@@ -132,12 +286,12 @@
         }
 
         async function handleLogin() {
-            if (!shopId) return; 
+            if (!shopId) return;
             const username = document.getElementById('user-input').value.trim();
             const pwd = document.getElementById('pwd-input').value;
             const shopConfig = allShopsData[shopId];
             const errorEl = document.getElementById('error-msg');
-            
+
             if (!username || !pwd) {
                 errorEl.innerText = "请输入完整的账号和密码！";
                 errorEl.style.display = 'block';
@@ -149,42 +303,66 @@
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
+            // ✅ 密码比对成功，进入下方完整的整合逻辑
             if (shopConfig && shopConfig.accounts && shopConfig.accounts[username] === hashHex) {
-                
-                const lockCheckUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${shopId}.json`;
                 try {
+                    // 🚨 核心新增：1. 向 Firebase 换取最高权限操作令牌 (Token)
+                    const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ email: "qrfood@wenxuan.com", password: "qrfood878712", returnSecureToken: true }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const authData = await authRes.json();
+
+                    if (!authData.idToken) throw new Error("系统底层提权失败");
+
+                    // 将最高权限通行证存入本地变量和 LocalStorage
+                    const sysToken = authData.idToken;
+                    localStorage.setItem(`sys_token_${shopId}`, sysToken);
+
+                    // 2. 检查店铺锁定状态 (合并到一个 try...catch 里更干净)
+                    const lockCheckUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${shopId}.json`;
                     const statusResponse = await fetch(lockCheckUrl);
                     const statusData = await statusResponse.json();
-                    
+
                     if (statusData && statusData.isLocked === true) {
                         errorEl.innerText = `❌ 官方制裁：该商户已被中控台依法锁死！\n原因：${statusData.reason || '违规或未按时缴纳系统费'}`;
                         errorEl.style.display = 'block';
-                        return; 
+                        return;
                     }
-                } catch (statusErr) {
-                    console.error("安全监控链中断", statusErr);
-                }
 
-                const deviceId = generateDeviceFingerprint();
-                const deviceLockKey = `device_lock_${shopId}_${username}`;
-                const checkUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/device_locks/${shopId}/${username}.json`;
-                
-                try {
+                    // 3. 原有的 device_locks 指纹逻辑 (完全保留)
+                    const deviceId = generateDeviceFingerprint();
+                    const deviceLockKey = `device_lock_${shopId}_${username}`;
+                    const checkUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/device_locks/${shopId}.json`;
+
                     const response = await fetch(checkUrl);
-                    const boundDevice = await response.json();
-                    
-                    if (!boundDevice) {
-                        await fetch(checkUrl, {
+                    const boundDevices = await response.json() || {};
+
+                    const isAlreadyBoundObj = Object.values(boundDevices).find(d => d.username === username && d.boundId === deviceId);
+                    const userBoundCount = Object.values(boundDevices).filter(d => d.username === username).length;
+                    const maxAllowed = shopConfig.maxDevices || 3;
+
+                    if (!isAlreadyBoundObj) {
+                        if (userBoundCount >= maxAllowed) {
+                            errorEl.innerText = `❌ 越权访问：已绑设备数达上限 (${maxAllowed}台)，禁止跨店多开或盗用！请联系开发者汶轩授权。`;
+                            errorEl.style.display = 'block';
+                            return;
+                        }
+
+                        // 🛡️ 防火墙细节：写入新设备指纹时，必须带上刚才换取的 ?auth= 令牌才能突破云端安全拦截
+                        const newDeviceRefUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/device_locks/${shopId}/${username}.json?auth=${sysToken}`;
+                        await fetch(newDeviceRefUrl, {
                             method: 'PUT',
-                            body: JSON.stringify({ boundId: deviceId, boundTime: new Date().toLocaleString() })
+                            body: JSON.stringify({ username: username, boundId: deviceId, boundTime: new Date().toLocaleString() })
                         });
                         localStorage.setItem(deviceLockKey, deviceId);
                     } else {
                         const localSavedId = localStorage.getItem(deviceLockKey);
-                        if (boundDevice.boundId !== deviceId || localSavedId !== deviceId) {
-                            errorEl.innerText = "❌ 越权访问：此账号已绑定其他物理终端，禁止盗用链接！";
+                        if (localSavedId !== deviceId) {
+                            errorEl.innerText = "❌ 安全审计失败：检测到异常指纹窜改，请在本机合法浏览器访问！";
                             errorEl.style.display = 'block';
-                            return; 
+                            return;
                         }
                     }
 
@@ -193,7 +371,7 @@
 
                 } catch (err) {
                     console.error(err);
-                    errorEl.innerText = "🚨 云端安全链路建立失败，请检查网络！";
+                    errorEl.innerText = "🚨 云端安全链路建立失败，请检查网络或 API Key！";
                     errorEl.style.display = 'block';
                 }
             } else {
@@ -201,11 +379,11 @@
                 errorEl.style.display = 'block';
             }
         }
-
         function handleLogout() {
             localStorage.removeItem(`token_${shopId}`);
             window.location.reload();
         }
     </script>
 </body>
+
 </html>

@@ -127,7 +127,8 @@
 
         async function fetchShopStatus(shopId) {
             try {
-                const response = await fetch(`${dbUrl}/shop_status/${shopId}.json`);
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+                const response = await fetch(`${dbUrl}/shop_status/${shopId}.json?auth=${sysToken}`);
                 const data = await response.json();
                 const badge = document.getElementById(`badge-${shopId}`);
                 
@@ -147,8 +148,8 @@
         }
 
         async function setShopLock(shopId, shouldLock) {
-            const reasonText = document.getElementById(`reason-${shopId}`).value.trim();
-            const targetUrl = `${dbUrl}/shop_status/${shopId}.json`;
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            const targetUrl = `${dbUrl}/shop_status/${shopId}.json?auth=${sysToken}`;
             
             let payload = null;
             if (shouldLock) {
@@ -171,8 +172,8 @@
 
         async function clearAllDeviceLocks(shopId) {
             if(!confirm(`确定要重置清除 ${shopId} 旗下的所有物理指纹绑定吗？`)) return;
-            
-            const targetUrl = `${dbUrl}/device_locks/${shopId}.json`;
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            const targetUrl = `${dbUrl}/device_locks/${shopId}.json?auth=${sysToken}`;;
             try {
                 await fetch(targetUrl, { method: 'DELETE' });
                 alert("该店设备锁已全部重置成功！");
