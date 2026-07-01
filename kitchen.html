@@ -1,62 +1,238 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <meta charset="UTF-8">
     <title> 后厨出单看板 🍞</title>
     <style>
-        
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #FAF6F0; margin: 20px; color: #4A3E3D; }
-        .kitchen-title { color: #8B5A2B; margin-bottom: 25px; text-align: center; font-size: 26px; font-weight: bold; }
-        .orders-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .order-card { background: white; border: none; border-radius: 16px; width: 300px; padding: 18px; box-shadow: 0 4px 15px rgba(139, 90, 43, 0.08); transition: transform 0.2s; display: flex; flex-direction: column; }
-        .order-card:hover { transform: translateY(-3px); }
-        .order-body { flex: 1; display: flex; flex-direction: column; }
-        .order-total { margin-top: auto; font-size: 18px; font-weight: bold; color: #D2691E; text-align: right; border-top: 2px dashed #F3E6DA; padding-top: 15px; }
-        .order-card:hover { transform: translateY(-3px); }
-        .order-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #F3E6DA; padding-bottom: 12px; margin-bottom: 12px; }
-        .order-id { font-weight: bold; color: #A08875; font-size: 14px; }
-        .table-num { background: #F5EBE6; color: #8B5A2B; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; }
-        .order-item { border-bottom: 1px solid #FDF5ED; padding: 10px 0; display: flex; flex-direction: column; }
-        .item-main { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; font-size: 15px; font-weight: bold; color: #4A3E3D; }
-        .item-qty { color: #D2691E; flex-shrink: 0; margin-left: 10px; }
-        .item-opt { font-size: 12px; color: #A08875; margin-top: 4px; font-weight: normal; }
-        .order-remark { margin-top: 10px; padding: 10px; background: #FFFBF7; color: #D2691E; border-radius: 8px; font-size: 13px; border-left: 4px solid #D2691E; font-weight: bold; }
-        .done-btn { width: 100%; background: #D2691E; color: white; border: none; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 25px; cursor: pointer; margin-top: 18px; box-shadow: 0 4px 10px rgba(210, 105, 30, 0.2); }
-        .pay-btn:hover { background: #633E1A; }
-        .history-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #E6D5C5; color: #633E1A; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .history-btn:hover { background: #D2BEAD; }
-        .history-modal-content { background: #FAF6F0; padding: 25px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; }
-        .history-item { background: #FFF; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; border: 1px solid #EFE2D5; }
-        .close-history { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #8B5A2B; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #FAF6F0;
+            margin: 20px;
+            color: #4A3E3D;
+        }
+
+        .kitchen-title {
+            color: #8B5A2B;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .orders-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .order-card {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            width: 300px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(139, 90, 43, 0.08);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .order-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .order-total {
+            margin-top: auto;
+            font-size: 18px;
+            font-weight: bold;
+            color: #D2691E;
+            text-align: right;
+            border-top: 2px dashed #F3E6DA;
+            padding-top: 15px;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #F3E6DA;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: #A08875;
+            font-size: 14px;
+        }
+
+        .table-num {
+            background: #F5EBE6;
+            color: #8B5A2B;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .order-item {
+            border-bottom: 1px solid #FDF5ED;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            font-size: 15px;
+            font-weight: bold;
+            color: #4A3E3D;
+        }
+
+        .item-qty {
+            color: #D2691E;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .item-opt {
+            font-size: 12px;
+            color: #A08875;
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
+        .order-remark {
+            margin-top: 10px;
+            padding: 10px;
+            background: #FFFBF7;
+            color: #D2691E;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 4px solid #D2691E;
+            font-weight: bold;
+        }
+
+        .done-btn {
+            width: 100%;
+            background: #D2691E;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 18px;
+            box-shadow: 0 4px 10px rgba(210, 105, 30, 0.2);
+        }
+
+        .pay-btn:hover {
+            background: #633E1A;
+        }
+
+        .history-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #E6D5C5;
+            color: #633E1A;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .history-btn:hover {
+            background: #D2BEAD;
+        }
+
+        .history-modal-content {
+            background: #FAF6F0;
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .history-item {
+            background: #FFF;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid #EFE2D5;
+        }
+
+        .close-history {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8B5A2B;
+        }
     </style>
 </head>
+
 <body>
 
-    <div style="display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 30px; margin-top: 10px;">
+    <div
+        style="display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 30px; margin-top: 10px;">
         <h1 class="kitchen-title" style="margin-bottom: 0;">后厨待订单 看板</h1>
     </div>
-    <div id="custom-alert-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
-        <div style="background: #FAF6F0; width: 80%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div id="custom-alert-text" style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">提示内容</div>        
+    <div id="custom-alert-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div
+            style="background: #FAF6F0; width: 80%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div id="custom-alert-text"
+                style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">提示内容
+            </div>
             <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="custom-alert-cancel" onclick="closeCustomAlert()" style="display: none; flex: 1; background: #E6D5C5; color: #633E1A; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">取 消</button>
-                <button id="custom-alert-confirm" style="flex: 1; background: #8B5A2B; color: white; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确 定</button>
+                <button id="custom-alert-cancel" onclick="closeCustomAlert()"
+                    style="display: none; flex: 1; background: #E6D5C5; color: #633E1A; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">取
+                    消</button>
+                <button id="custom-alert-confirm"
+                    style="flex: 1; background: #8B5A2B; color: white; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确
+                    定</button>
             </div>
         </div>
     </div>
-    
+
     <div class="orders-grid" id="kitchen-orders-list"></div>
-    
+
     <iframe id="kitchen-print-frame" style="display: none;"></iframe>
 
     <script>
-       const urlParams = new URLSearchParams(window.location.search);
-       const currentShopId = urlParams.get('shop');
-       const sysToken = localStorage.getItem(`sys_token_${currentShopId}`);
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentShopId = urlParams.get('shop');
+        const sysToken = localStorage.getItem(`sys_token_${currentShopId}`);
 
-            if (!currentShopId || localStorage.getItem(`token_${currentShopId}`) !== 'authenticated' || !sysToken) {
+        if (!currentShopId || localStorage.getItem(`token_${currentShopId}`) !== 'authenticated' || !sysToken) {
             alert('非法访问，请先从中控台登入！');
             window.location.href = `login.html?shop=${currentShopId || ''}`;
         }
@@ -65,7 +241,7 @@
         const lockMonitorUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json?auth=${sysToken}`;
         const lockEventSource = new EventSource(lockMonitorUrl);
 
-        lockEventSource.addEventListener('put', function(e) {
+        lockEventSource.addEventListener('put', function (e) {
             const parsed = JSON.parse(e.data);
             if (!parsed) return;
 
@@ -89,160 +265,174 @@
             }
         });
 
-        const firebaseStreamUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json?auth=${sysToken}`;
-        const eventSource = new EventSource(firebaseStreamUrl);
+        let eventSource;
 
-        eventSource.addEventListener('put', function(e) {
-            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json?auth=${sysToken}`)
-            .then(res => res.json())
-            .then(statusData => {
-                if (statusData && statusData.isLocked === true) {
-                    document.body.innerHTML = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#fff0f0; color:#c62828;"><h1 style="font-size:48px; margin-bottom:10px;">🚨 官方依法死锁封号</h1></div>`;
-                    return; 
-                }
+        function startKitchenStream() {
+            fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shop_status/${currentShopId}.json`)
+                .then(res => res.json())
+                .then(statusData => {
+                    if (statusData && statusData.isLocked) return document.body.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:#c62828;"><h1>🚨 官方死锁</h1></div>`;
 
-                const parsed = JSON.parse(e.data);
-                if (!parsed) return;
-                const path = parsed.path;
-                const data = parsed.data;
+                    const streamUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json`;
+                    eventSource = new EventSource(streamUrl);
 
-                if (path === "/" && !data) {
-                    document.getElementById('kitchen-orders-list').innerHTML = "";
-                    return;
-                }
+                    const handleFirebaseEvent = async function (e) {
+                        const parsed = JSON.parse(e.data);
+                        if (!parsed || !parsed.data) return;
 
-                if (path === "/") {
-                    for (let key in data) {
-                        const singleOrder = data[key];
-                        if (singleOrder && singleOrder.shopId === currentShopId && (singleOrder.status === "pending" || singleOrder.status === "cooking")) {
-                            renderOrderCardToKitchen(key, singleOrder);
-                            if (singleOrder.status === "pending") {
-                                onNewOrderArrived(key, singleOrder);
-                                updateOrderStatus(key, "cooking");
+                        // 1. 全局初始化加载
+                        if (parsed.path === "/") {
+                            document.getElementById('kitchen-orders-list').innerHTML = "";
+                            for (let key in parsed.data) {
+                                const order = parsed.data[key];
+                                if (order && order.shopId === currentShopId && order.kitchenItems && (order.status === "pending" || order.status === "cooking")) {
+                                    renderOrderCardToKitchen(key, order);
+                                    if (order.status === "pending") {
+                                        onNewOrderArrived(key, order);
+                                        updateOrderStatus(key, "cooking");
+                                    }
+                                }
                             }
                         }
-                    }
-                } else {
-                    const orderId = path.replace('/', '');
-                    if (data === null) {
-                        const card = document.getElementById(`card-${orderId}`);
-                        if (card) card.remove();
-                        return; 
-                    }
-                    
-                    // 🛡️ 核心防御：过滤碎片数据，后厨引擎只处理带有 items 的新订单
-                    if (data.items && data.shopId === currentShopId && data.status === "pending") {
-                        onNewOrderArrived(orderId, data);
-                        renderOrderCardToKitchen(orderId, data);
-                        updateOrderStatus(orderId, "cooking");
-                    }
-                }
-            });
-        });
+                        // 2. 实时变动更新 (二次核验抓取，100%免疫数据碎片)
+                        else {
+                            const orderId = parsed.path.split('/')[1];
+                            if (parsed.data === null && parsed.path.split('/').length === 2) {
+                                const card = document.getElementById(`card-${orderId}`);
+                                if (card) card.remove();
+                                return;
+                            }
 
-       function cancelOrderKitchen(orderId) {
-            showCustomAlert("⚠️ 确定要取消并作废此订单吗？<br><span style='font-size:13px;color:#888;font-weight:normal;'>作废后将软删除并移至历史记录。</span>", true, function() {
-                
+                            try {
+                                const res = await fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`);
+                                const order = await res.json();
+                                if (!order) {
+                                    const card = document.getElementById(`card-${orderId}`);
+                                    if (card) card.remove();
+                                    return;
+                                }
+                                
+                                if (order.shopId === currentShopId) {
+                                    // 🌟 核心修复：分离渲染与打印判定
+                                    if (order.kitchenItems && (order.status === "pending" || order.status === "cooking")) {
+                                        // 无论 pending 还是 cooking，都必须渲染卡片确保热重载
+                                        renderOrderCardToKitchen(orderId, order);
+                                        
+                                        // 严格拦截：只有真正处于 pending 的初次推送，才执行打印并推进状态
+                                        if (order.status === "pending") {
+                                            onNewOrderArrived(orderId, order);
+                                            updateOrderStatus(orderId, "cooking");
+                                        }
+                                    } else if (order.status === "completed" || order.status === "cancelled" || order.status === "paid" || !order.kitchenItems) {
+                                        const card = document.getElementById(`card-${orderId}`);
+                                        if (card) card.remove();
+                                    }
+                                }
+                            } catch (err) { console.warn("核验失败:", err); }
+                        }
+                    };
+
+                    eventSource.addEventListener('put', handleFirebaseEvent);
+                    eventSource.addEventListener('patch', handleFirebaseEvent);
+
+                    eventSource.onerror = function () {
+                        eventSource.close(); setTimeout(startKitchenStream, 5000);
+                    };
+                });
+        }
+
+        startKitchenStream();
+
+        function cancelOrderKitchen(orderId) {
+            showCustomAlert("⚠️ 确定要取消并作废此订单吗？", true, async function () {
                 const orderToSave = window.kitchenActiveOrders[orderId];
                 if (!orderToSave) return;
-                
+
+                // 🌟 统一数据结构，与收银端对账总账看齐
                 orderToSave.status = "cancelled";
                 orderToSave.cancelTime = new Date().toLocaleString();
-                
-                const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
-                const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}.json?auth=${sysToken}`;
-                
-                fetch(historyUrl, { method: 'PUT', body: JSON.stringify(orderToSave) })
-                .then(() => {
-                    const firebaseUpdateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`;
-                    fetch(firebaseUpdateUrl, { method: 'DELETE' }).catch(err => console.error(err));
-                    
-                    const card = document.getElementById(`card-${orderId}`);
-                    if (card) card.remove();
+                orderToSave.payMethod = "已作废";
+                orderToSave.finalTotal = 0;
+
+                // 🌟 核心同步：先用 PATCH 瞬间广播作废状态，让收银台立刻触发监听并移除卡片
+                await fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: "cancelled" })
                 });
-            }); 
+
+                const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+                await fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${todayStr}/${orderId}_${Date.now()}.json?auth=${sysToken}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(orderToSave)
+                })
+
+                await fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`, {
+                    method: 'DELETE'
+                });
+
+                const card = document.getElementById(`card-${orderId}`);
+                if (card) card.remove();
+                showCustomAlert("✅ 已作废记录！"); // 补齐提示
+            });
         }
 
         // ==========================================
         // 2. 看板卡片渲染模块
         // ==========================================
         function renderOrderCardToKitchen(orderId, orderData) {
-            // 💡 必须缓存当前订单数据，否则取消时找不到数据归档
             if (!window.kitchenActiveOrders) window.kitchenActiveOrders = {};
             window.kitchenActiveOrders[orderId] = orderData;
 
-            if (document.getElementById(`card-${orderId}`)) return;
+            const existingCard = document.getElementById(`card-${orderId}`);
+            if (existingCard) existingCard.remove(); // 热重载
+
+            const targetItems = orderData.kitchenItems;
+            if (!targetItems || Object.keys(targetItems).length === 0) return;
 
             const listContainer = document.getElementById('kitchen-orders-list');
             let itemsListHtml = "";
-
-            if (orderData.items) {
-                for (let key in orderData.items) {
-                    if (orderData.items.hasOwnProperty(key)) {
-                        const item = orderData.items[key];
-                        const count = item.count || item.quantity || 1;
-                        let displayName = key;
-                        let optionHtml = "";
-                        
-                        const match = key.match(/(.+?)\s*[\(（](.+?)[\)）]/);
-                        if (match) {
-                            displayName = match[1].trim();
-                            optionHtml = `<div class="item-opt">${match[2].trim()}</div>`;
-                        }
-
-                        itemsListHtml += `
-                            <div class="order-item">
-                                <div class="item-main">
-                                    <span>${displayName}</span> 
-                                    <span class="item-qty">x${count}</span>
-                                </div>
-                                ${optionHtml} 
-                            </div>
-                        `;
-                    }
-                }
+            for (let key in targetItems) {
+                const count = targetItems[key].count || 1;
+                let displayName = key;
+                let optionHtml = "";
+                const match = key.match(/(.+?)\s*[\(（](.+?)[\)）]/);
+                if (match) { displayName = match[1].trim(); optionHtml = `<div class="item-opt">${match[2].trim()}</div>`; }
+                itemsListHtml += `<div class="order-item"><div class="item-main"><span>${displayName}</span><span class="item-qty">x${count}</span></div>${optionHtml}</div>`;
             }
 
             const remarkHtml = orderData.remark ? `<div class="order-remark">📌 备注：${orderData.remark}</div>` : "";
-
-            const cardHtml = `
-                <div class="order-card" id="card-${orderId}">
-                    <div class="order-header">
-                        <span class="order-id">单号: #${orderId.slice(-4)}</span>
-                        <span class="table-num">${orderData.tableNumber || '外带'}</span>
-                    </div>
-                    <div class="order-body">
-                        ${itemsListHtml}
-                        ${remarkHtml}
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 18px;">
-                        <button onclick="cancelOrderKitchen('${orderId}')" style="flex: 1; background: #FFFBF7; color: #e74c3c; border: 1px solid #ffcdd2; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 25px; cursor: pointer;">🚫 取消</button>
-                        <button class="done-btn" onclick="completeOrder('${orderId}')" style="flex: 2; margin-top: 0;">完成出单</button>
-                    </div>
+            listContainer.insertAdjacentHTML('beforeend', `
+            <div class="order-card" id="card-${orderId}">
+                <div class="order-header"><span class="order-id">单号: #${orderId.slice(-4)}</span><span class="table-num">${orderData.tableNumber || '外带'}</span></div>
+                <div class="order-body">${itemsListHtml}${remarkHtml}</div>
+                <div style="display: flex; gap: 8px; margin-top: 18px;">
+                    <button onclick="cancelOrderKitchen('${orderId}')" style="flex: 1; background: #FFFBF7; color: #e74c3c; border: 1px solid #ffcdd2; padding: 12px 0; font-size: 13px; font-weight: bold; border-radius: 25px; cursor: pointer;">🚫 取消</button>
+                    <button onclick="triggerManualPrint('${orderId}')" style="flex: 1; background: #FFFBF7; color: #8B5A2B; border: 1px solid #E6D5C5; padding: 12px 0; font-size: 13px; font-weight: bold; border-radius: 25px; cursor: pointer;">🖨️ 打印</button>
+                    <button class="done-btn" onclick="completeOrder('${orderId}')" style="flex: 1.5; margin-top: 0; padding: 12px 0; font-size: 13px;">完成出单</button>
                 </div>
-            `;
-            listContainer.insertAdjacentHTML('beforeend', cardHtml);
+            </div>
+        `);
         }
-        
-        // ==========================================
-        // 3. 状态控制与交互引擎
-        // ==========================================
-        
-        // 💡 需要替换的代码：完整的自动打印引擎
+
+        // 🚨 替换原有的 onNewOrderArrived，只打印增量单据
         function onNewOrderArrived(orderId, orderData) {
+            const targetItems = orderData.kitchenItems;
+            if (!targetItems || Object.keys(targetItems).length === 0) return;
+
             let html = `<div style="font-family: sans-serif; font-size: 14px; width: 100%; color: #000;">`;
-            html += `<h3 style="text-align: center; margin: 0 0 10px 0;"> 后厨单</h3>`;
+            html += `<h3 style="text-align: center; margin: 0 0 10px 0;"> 后厨新单</h3>`;
             html += `<p style="margin: 3px 0;">单号: #${orderId.slice(-4)}</p>`;
             html += `<p style="margin: 3px 0; font-weight: bold; font-size: 16px;">桌号: ${orderData.tableNumber || '外带'}</p>`;
             html += `<hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;">`;
-            
-            for (let key in orderData.items) {
-                const count = orderData.items[key].count || 1;
+
+            for (let key in targetItems) {
+                const count = targetItems[key].count || 1;
                 html += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold;">`;
                 html += `<span style="flex: 1; padding-right: 10px;">${key}</span>`;
                 html += `<span>x${count}</span></div>`;
             }
-            
+
             if (orderData.remark) {
                 html += `<hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;">`;
                 html += `<p style="margin: 3px 0; font-weight: bold;">📌 备注: ${orderData.remark}</p>`;
@@ -251,87 +441,128 @@
 
             const frame = document.getElementById('kitchen-print-frame');
             const doc = frame.contentWindow.document;
-            doc.open();
-            doc.write(html);
-            doc.close();
-            
-            // 延迟 200ms 确保 DOM 渲染完毕后再呼叫打印
+            doc.open(); doc.write(html); doc.close();
+
             setTimeout(() => {
                 frame.contentWindow.focus();
                 frame.contentWindow.print();
             }, 200);
         }
-        
-        function updateOrderStatus(orderId, newStatus) {
-    // ⚠️ 之前这里的 URL 结尾大概率是 .json"，现在必须改成 .json?auth=${sysToken}
-    const updateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${sysToken}`;
-    
-    fetch(updateUrl, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: newStatus })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("更新状态失败");
-        console.log("订单状态已更新:", newStatus);
-    })
-    .catch(error => {
-        console.error("后厨更新报错:", error);
-        alert("状态更新失败，请检查网络或刷新页面！");
-    });
-}
 
-        // 💡 需要加回的代码：刚才覆盖时可能不小心删掉了这个函数
-        function completeOrder(orderId) {
-            updateOrderStatus(orderId, "completed");
-            const card = document.getElementById(`card-${orderId}`);
-            if (card) {
-                card.remove();
+        // 新增核心函数：手动补打/选择性出单调用通道
+        function triggerManualPrint(orderId) {
+            const orderData = window.kitchenActiveOrders ? window.kitchenActiveOrders[orderId] : null;
+            if (orderData) {
+                onNewOrderArrived(orderId, orderData, true);
             }
         }
-        function openHistory() {
-        document.getElementById('history-modal').style.display = 'flex';
-        const todayStr = new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'}).replace(/\//g, '-');
-        loadKitchenHistoryByDate(todayStr);
-    }
 
-    function loadKitchenHistoryByDate(dateStr) {
-        const list = document.getElementById('history-list');
-        list.innerHTML = '加载中...';
-        
-        const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${dateStr}.json`;
-        
-        fetch(historyUrl).then(res => res.json()).then(data => {
-            let dateSelectorHtml = `
+        async function updateOrderStatus(orderId, newStatus) {
+            // 每次执行时，实时从本地拿取最新的钥匙
+            let currentToken = localStorage.getItem(`sys_token_${currentShopId}`);
+            let updateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${currentToken}`;
+
+            try {
+                let response = await fetch(updateUrl, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                // 🚨 核心防御装甲：如果碰到 401 钥匙过期，立刻自动后台提权换钥！
+                if (response.status === 401) {
+                    console.warn("🔐 写入凭证已过期，正在后台秒级自动续期...");
+                    const FIREBASE_API_KEY = "AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY";
+
+                    const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ email: "qrfood@wenxuan.com", password: "qrfood878712", returnSecureToken: true }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const authData = await authRes.json();
+
+                    if (authData.idToken) {
+                        currentToken = authData.idToken;
+                        localStorage.setItem(`sys_token_${currentShopId}`, currentToken); // 保存新钥匙
+
+                        // 拿着新鲜的钥匙，无缝重新发送状态更新请求
+                        updateUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${currentToken}`;
+                        response = await fetch(updateUrl, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                    }
+                }
+
+                if (!response.ok) throw new Error("状态更新被云端拒绝");
+                console.log(`✅ 订单 #${orderId.slice(-4)} 状态已成功更新为:`, newStatus);
+
+            } catch (error) {
+                console.error("❌ 后厨更新报错:", error);
+                // 调用你现有的弹窗函数提示
+                if (typeof showCustomAlert === "function") {
+                    showCustomAlert("状态更新失败，请检查网络！");
+                } else {
+                    alert("状态更新失败，请检查网络！");
+                }
+            }
+        }
+
+        // 💡 需要加回的代码：刚才覆盖时可能不小心删掉了这个函数
+        async function completeOrder(orderId) {
+            let currentToken = localStorage.getItem(`sys_token_${currentShopId}`);
+            try {
+                await fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${orderId}.json?auth=${currentToken}`, {
+                    method: 'PATCH', body: JSON.stringify({ status: "completed", kitchenItems: null })
+                });
+                const card = document.getElementById(`card-${orderId}`);
+                if (card) card.remove();
+            } catch (e) { console.error("出单失败", e); }
+        }
+
+        function openHistory() {
+            document.getElementById('history-modal').style.display = 'flex';
+            const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+            loadKitchenHistoryByDate(todayStr);
+        }
+
+        function loadKitchenHistoryByDate(dateStr) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '加载中...';
+
+            const historyUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/history/${dateStr}.json`;
+
+            fetch(historyUrl).then(res => res.json()).then(data => {
+                let dateSelectorHtml = `
                 <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
                     <span style="font-size: 14px; font-weight: bold; color: #8B5A2B;">选择查看日期:</span>
                     <input type="date" id="history-date-picker" value="${dateStr}" onchange="loadKitchenHistoryByDate(this.value)" style="border: 1px solid #E6D5C5; padding: 6px 10px; border-radius: 10px; font-family: inherit; color: #8B5A2B; font-weight: bold; outline: none;">
                 </div>
             `;
 
-            if (!data) {
-                list.innerHTML = dateSelectorHtml + '<div style="text-align:center; color:#999; margin-top: 20px;">该日期暂无出单记录</div>';
-                return;
-            }
-            
-            let html = '';
-        let cancelledHtml = '';
-        let totalCount = 0;
-        let cancelledCount = 0;
-        
-        Object.keys(data).reverse().forEach(key => {
-            const order = data[key];
-            if (order.shopId && order.shopId !== currentShopId) return;
-            
-            let itemsStr = '';
-            if(order.items) {
-                Object.keys(order.items).forEach(itemKey => {
-                    itemsStr += `${itemKey} <span style="color:#D2691E">x${order.items[itemKey].count || 1}</span><br>`;
-                });
-            }
-            
-            if (order.status === 'cancelled') {
-                cancelledCount++;
-                cancelledHtml += `
+                if (!data) {
+                    list.innerHTML = dateSelectorHtml + '<div style="text-align:center; color:#999; margin-top: 20px;">该日期暂无出单记录</div>';
+                    return;
+                }
+
+                let html = '';
+                let cancelledHtml = '';
+                let totalCount = 0;
+                let cancelledCount = 0;
+
+                Object.keys(data).reverse().forEach(key => {
+                    const order = data[key];
+                    if (order.shopId && order.shopId !== currentShopId) return;
+
+                    let itemsStr = '';
+                    if (order.items) {
+                        Object.keys(order.items).forEach(itemKey => {
+                            itemsStr += `${itemKey} <span style="color:#D2691E">x${order.items[itemKey].count || 1}</span><br>`;
+                        });
+                    }
+
+                    if (order.status === 'cancelled') {
+                        cancelledCount++;
+                        cancelledHtml += `
                     <div class="history-item" style="flex-direction: column; background: #fff0f0; border: 1px solid #ffcdd2;">
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ffcdd2; padding-bottom: 8px; margin-bottom: 8px;">
                             <div style="font-weight: bold; color: #c62828;"><del>单号: #${key.slice(-4)}</del> | 桌号: ${order.tableNumber || '外带'}</div>
@@ -341,9 +572,9 @@
                         <div style="margin-top: 6px; font-size: 13px; font-weight: bold; color: #c62828;">🚫 已作废</div>
                     </div>
                 `;
-            } else {
-                totalCount++;
-                html += `
+                    } else {
+                        totalCount++;
+                        html += `
                     <div class="history-item" style="flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EFE2D5; padding-bottom: 8px; margin-bottom: 8px;">
                             <div style="font-weight: bold; color: #4A3E3D;">单号: #${key.slice(-4)} | 桌号: ${order.tableNumber || '外带'}</div>
@@ -352,56 +583,41 @@
                         <div style="font-size: 14px; color: #633E1A; line-height: 1.5;">${itemsStr}</div>
                     </div>
                 `;
-            }
-        });
-        
-        let displayHtml = dateSelectorHtml;
-        if (totalCount > 0 || cancelledCount === 0) {
-            displayHtml += `<div style="font-size: 16px; font-weight: bold; color: #8B5A2B; margin-bottom: 15px;">✅ 当日已完成: ${totalCount} 单</div>` + html;
-        }
-        if (cancelledCount > 0) {
-            displayHtml += `<div style="font-size: 16px; font-weight: bold; color: #c62828; margin: 20px 0 15px 0;">🚫 当日已作废: ${cancelledCount} 单</div>` + cancelledHtml;
-        }
-        list.innerHTML = displayHtml;
-        });
-    }
+                    }
+                });
 
-    function closeHistory() {
-        document.getElementById('history-modal').style.display = 'none';
-    }
-    function renderOrderCard(orderData) {
-    // orderData 是从 Firebase 抓下来的单个订单对象
-    return `
-        <div class="order-card">
-            <div class="order-header">
-                <span class="table-badge">📍 桌号：${orderData.tableNo}</span>
-                <span class="order-id">单号：${orderData.orderId}</span>
-            </div>
-            <div class="order-body">
-                </div>
-            <div class="order-footer">
-                <span>总计：RM ${orderData.totalPrice}</span>
-            </div>
-        </div>
-    `;
-}
-let onCustomConfirmCallback = null;
-    function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
-        const modal = document.getElementById('custom-alert-modal');
-        document.getElementById('custom-alert-text').innerHTML = text;
-        onCustomConfirmCallback = confirmCallback;
-        
-        document.getElementById('custom-alert-cancel').style.display = isConfirmMode ? 'block' : 'none';
-        document.getElementById('custom-alert-confirm').onclick = function() {
-            if (isConfirmMode && typeof onCustomConfirmCallback === "function") {
-                onCustomConfirmCallback();
-            }
-            closeCustomAlert();
-        };
-        if (modal) modal.style.display = "flex";
-    }
-    function closeCustomAlert() {
-        const modal = document.getElementById('custom-alert-modal');
-        if (modal) modal.style.display = "none";
-    }
-</script>
+                let displayHtml = dateSelectorHtml;
+                if (totalCount > 0 || cancelledCount === 0) {
+                    displayHtml += `<div style="font-size: 16px; font-weight: bold; color: #8B5A2B; margin-bottom: 15px;">✅ 当日已完成: ${totalCount} 单</div>` + html;
+                }
+                if (cancelledCount > 0) {
+                    displayHtml += `<div style="font-size: 16px; font-weight: bold; color: #c62828; margin: 20px 0 15px 0;">🚫 当日已作废: ${cancelledCount} 单</div>` + cancelledHtml;
+                }
+                list.innerHTML = displayHtml;
+            });
+        }
+
+        function closeHistory() {
+            document.getElementById('history-modal').style.display = 'none';
+        }
+
+        let onCustomConfirmCallback = null;
+        function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            document.getElementById('custom-alert-text').innerHTML = text;
+            onCustomConfirmCallback = confirmCallback;
+
+            document.getElementById('custom-alert-cancel').style.display = isConfirmMode ? 'block' : 'none';
+            document.getElementById('custom-alert-confirm').onclick = function () {
+                if (isConfirmMode && typeof onCustomConfirmCallback === "function") {
+                    onCustomConfirmCallback();
+                }
+                closeCustomAlert();
+            };
+            if (modal) modal.style.display = "flex";
+        }
+        function closeCustomAlert() {
+            const modal = document.getElementById('custom-alert-modal');
+            if (modal) modal.style.display = "none";
+        }
+    </script>

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title> 勿忘心 🌟 | 电子菜单 🌟</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <div class="header">
@@ -56,27 +58,29 @@
         </div>
 
         <div class="cart-footer-btn">
-            <button class="confirm-order-btn" onclick="submitOrderToCloud()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <button class="confirm-order-btn" onclick="executeFirebaseSubmit()"
+                style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <span class="item-count-badge" id="cart-badge-count">0</span>
                 <span>确认订单</span>
                 <span id="cart-btn-total">RM 0.00</span>
             </button>
         </div>
-    </div> 
-    
+    </div>
+
     <div class="floating-cart" onclick="toggleCartPage(true)" id="floating-cart-btn">
         <img src="images/wuwangxin_a/勿忘心.png" alt="购物车" class="cart-icon-img">
         <span id="main-cart-count">0</span>
     </div>
 
-    <div id="spec-modal" class="spec-modal-mask" style="display: none;" onclick="if(event.target === this) closeSpecModal()">
+    <div id="spec-modal" class="spec-modal-mask" style="display: none;"
+        onclick="if(event.target === this) closeSpecModal()">
         <div class="spec-modal-content">
             <span class="spec-close-btn" onclick="closeSpecModal()">&times;</span>
-            
+
             <img id="spec-item-img" src="" alt="菜品图片" class="spec-main-img">
             <h2 id="spec-item-name">菜品名称</h2>
             <p id="spec-item-desc" style="color: #999; font-size: 14px; margin: 5px 0 15px 0;">菜品描述</p>
-            
+
             <div class="spec-section">
                 <div class="spec-section-title">选项 (选择1)</div>
                 <div id="spec-options-list"></div>
@@ -99,12 +103,20 @@
         </div>
     </div>
 
-    <div id="custom-alert-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
-        <div style="background: #fff; width: 85%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
-            <div id="custom-alert-text" style="font-size: 16px; color: #333; font-weight: 500; line-height: 1.5; margin-bottom: 24px;">提示内容</div>        
+    <div id="custom-alert-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div
+            style="background: #fff; width: 85%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+            <div id="custom-alert-text"
+                style="font-size: 16px; color: #333; font-weight: 500; line-height: 1.5; margin-bottom: 24px;">提示内容
+            </div>
             <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="custom-alert-cancel" onclick="closeCustomAlert()" style="display: none; background: #eee; color: #555; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; flex: 1; outline: none;">取 消</button>
-                <button id="custom-alert-confirm" style="background: #6d4c41; color: #fff; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; flex: 1; outline: none;">确 定</button>
+                <button id="custom-alert-cancel" onclick="closeCustomAlert()"
+                    style="display: none; background: #eee; color: #555; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; flex: 1; outline: none;">取
+                    消</button>
+                <button id="custom-alert-confirm"
+                    style="background: #6d4c41; color: #fff; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; flex: 1; outline: none;">确
+                    定</button>
             </div>
         </div>
     </div>
@@ -117,54 +129,21 @@
         let shopId = urlParams.get('shop') || 'wuwangxin_a';
         if (shopId === 'null') shopId = 'wuwangxin_a';
 
-        const tableId = urlParams.get('table') || '外带'; 
+        const tableId = urlParams.get('table') || '外带';
 
         window.myCart = window.myCart || {};
 
-       // 2. 顾客点击“一键下单”的触发函数
-       async function submitOrder(cartItems, totalPrice) {
-       if (!shopId) return alert("店铺参数缺失！");
-    
-        // 生成唯一的订单号（用时间戳）
-        const orderId = "ORD_" + Date.now();
-    
-        // 3. 完美组装商用订单数据包，带上桌号
-        const orderPayload = {
-        orderId: orderId,
-        tableNo: tableId,       // 👉 核心：正式绑定桌号，传入 Firebase
-        items: cartItems,       // 购物车菜品数组
-        totalPrice: totalPrice, // 总计金额
-        status: "pending",      // 默认待处理状态
-        orderTime: new Date().toLocaleString()
-    };
-
-    // 4. 推送到 Firebase 的当前实时订单节点下
-    const targetUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${shopId}/${orderId}.json`;
-    
-    try {
-        const response = await fetch(targetUrl, {
-            method: 'PUT',
-            body: JSON.stringify(orderPayload)
-        });
-        if(response.ok) {
-            alert(`🎉 桌号 [${tableId}] 下单成功！订单已秒传至后厨与收银台。`);
-        }
-    } catch (err) {
-        console.error("订单上传失败", err);
-    }
-}
-        
 
         // D. 页面初始化渲染菜单 (动态加载重构版)
         if (!shopId || shopId === 'null') {
             shopId = 'wuwangxin_a';
         }
-        
-        const script = document.createElement('script'); 
-        script.src = `menus/${shopId}.js`; 
+
+        const script = document.createElement('script');
+        script.src = `menus/${shopId}.js`;
 
         // 2. 加载成功时的逻辑
-        script.onload = function() {
+        script.onload = function () {
             const currentShop = typeof allShopsData !== 'undefined' ? allShopsData[shopId] : null;
 
             if (currentShop && window.currentShopMenu) {
@@ -202,7 +181,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 window.currentShopMenu.forEach(cat => {
                     menuHtml += `<div class="category-title">${cat.categoryTitle}</div>`;
                     menuHtml += `<div class="menu-list">`;
@@ -222,15 +201,15 @@
                             </div>
                         `;
                     });
-                    menuHtml += `</div>`; 
+                    menuHtml += `</div>`;
                 });
-                
+
                 document.getElementById('menu-container').innerHTML = menuHtml;
             }
         };
 
         // 3. 🚨 加载失败时的防卡死逻辑 (新增)
-        script.onerror = function() {
+        script.onerror = function () {
             document.getElementById('shop-name').innerText = "菜单加载失败 ❌";
             document.getElementById('shop-slogan').innerHTML = `找不到菜单文件 <strong style="color:red;">menus/${shopId}.js</strong><br>请检查服务器文件是否上传完整！`;
             document.getElementById('shop-slogan').style.color = "#c62828";
@@ -243,14 +222,14 @@
         function filterMenu() {
             const keyword = document.getElementById('menu-search').value.trim().toLowerCase();
             const menuLists = document.querySelectorAll('.menu-list');
-            
+
             // 如果搜索框是空的，恢复正常菜单风格
             if (keyword === '') {
                 menuLists.forEach(list => {
                     list.style.display = 'block';
                     list.style.margin = '';
-                    list.style.padding = ''; 
-                    
+                    list.style.padding = '';
+
                     const items = list.querySelectorAll('.menu-item');
                     items.forEach(item => item.style.display = 'flex');
 
@@ -265,15 +244,15 @@
             // 搜索状态下
             menuLists.forEach(list => {
                 const items = list.querySelectorAll('.menu-item');
-                let hasVisibleItem = false; 
+                let hasVisibleItem = false;
 
                 items.forEach(item => {
                     const name = item.querySelector('.item-name').innerText.toLowerCase();
                     if (name.includes(keyword)) {
                         item.style.display = 'flex';
-                        hasVisibleItem = true; 
+                        hasVisibleItem = true;
                     } else {
-                        item.style.display = 'none'; 
+                        item.style.display = 'none';
                     }
                 });
 
@@ -294,20 +273,20 @@
         }
 
         // F. 🍧 规格加料弹窗核心控制引擎
-        let currentSelectingItem = null; 
-        let currentSpecCount = 1;        
-        let selectedOptionIndex = 0; 
-        let selectedOptionIndex2 = 0;    
+        let currentSelectingItem = null;
+        let currentSpecCount = 1;
+        let selectedOptionIndex = 0;
+        let selectedOptionIndex2 = 0;
 
         // 请在 index.html 找到原本的 addToCart 函数，将这整个函数完全替换
         function addToCart(name, priceStr, imgUrl, desc) {
-            const basePrice = (priceStr && typeof priceStr.replace === 'function') 
-                ? parseFloat(priceStr.replace(/[^\d.]/g, '')) 
+            const basePrice = (priceStr && typeof priceStr.replace === 'function')
+                ? parseFloat(priceStr.replace(/[^\d.]/g, ''))
                 : 0;
-                
+
             currentSpecCount = 1;
-            selectedOptionIndex = 0; 
-            selectedOptionIndex2 = 0; 
+            selectedOptionIndex = 0;
+            selectedOptionIndex2 = 0;
 
             let targetOptions = [{ label: "默认", extraPrice: 0 }];
             let targetOptions2 = [];
@@ -358,7 +337,7 @@
             document.getElementById('spec-options-list').innerHTML = optionsHtml;
 
             const section2 = document.getElementById('spec-section-2');
-            if (section2) { 
+            if (section2) {
                 if (currentSelectingItem.options2 && currentSelectingItem.options2.length > 0) {
                     section2.style.display = 'block';
                     let options2Html = '';
@@ -406,12 +385,12 @@
             if (!currentSelectingItem) return;
             const opt = currentSelectingItem.options[selectedOptionIndex];
             let extraPriceTotal = opt ? opt.extraPrice : 0;
-            
+
             if (currentSelectingItem.options2 && currentSelectingItem.options2.length > 0) {
                 const opt2 = currentSelectingItem.options2[selectedOptionIndex2];
                 if (opt2) extraPriceTotal += opt2.extraPrice;
             }
-            
+
             const totalPrice = (currentSelectingItem.basePrice + extraPriceTotal) * currentSpecCount;
             document.getElementById('spec-total-price').innerText = `RM ${totalPrice.toFixed(2)}`;
         }
@@ -466,52 +445,52 @@
         // G. 🗑️ 购物车商品移除引擎
         function removeFromCart(name) {
             if (typeof myCart !== "undefined" && myCart[name]) {
-                delete myCart[name]; 
+                delete myCart[name];
                 updateCartBadge();
-                renderCartDetails(); 
+                renderCartDetails();
             }
         }
 
         // H. 🔄 UI 刷新：更新悬浮红点和底部栏
         function updateCartBadge() {
             let totalCount = 0;
-            for (let id in myCart) { 
-                totalCount += myCart[id].count; 
+            for (let id in myCart) {
+                totalCount += myCart[id].count;
             }
-            
+
             const mainCountBadge = document.getElementById('main-cart-count');
             const cartBadgeCount = document.getElementById('cart-badge-count');
-            
+
             if (mainCountBadge) mainCountBadge.innerText = totalCount;
             if (cartBadgeCount) cartBadgeCount.innerText = totalCount;
 
             const cartFooterBox = document.querySelector('.footer') || document.getElementById('floating-cart-btn');
             if (cartFooterBox) {
-                cartFooterBox.style.display = "flex"; 
+                cartFooterBox.style.display = "flex";
             }
         }
 
         // I. 🛒 UI 刷新：渲染购物车详细账单
         function renderCartDetails() {
-           let shopName = "勿忘心 🌟";
-           if (typeof allShopsData !== 'undefined' && allShopsData[shopId]) {
-              shopName = allShopsData[shopId].shopName;
-           }
-    
-           document.getElementById('cart-shop-name').innerText = shopName;
-    
-           document.getElementById('cart-table-number').innerText = (tableId && tableId !== '外带') ? `桌 ${tableId}` : "外带";
+            let shopName = "勿忘心 🌟";
+            if (typeof allShopsData !== 'undefined' && allShopsData[shopId]) {
+                shopName = allShopsData[shopId].shopName;
+            }
 
-           let itemsHtml = '';
-           let subtotal = 0;
-           let totalItemsCount = 0;
+            document.getElementById('cart-shop-name').innerText = shopName;
+
+            document.getElementById('cart-table-number').innerText = (tableId && tableId !== '外带') ? `桌 ${tableId}` : "外带";
+
+            let itemsHtml = '';
+            let subtotal = 0;
+            let totalItemsCount = 0;
 
             for (let name in myCart) {
                 const item = myCart[name];
                 const itemTotalPrice = item.price * item.count;
                 subtotal += itemTotalPrice;
                 totalItemsCount += item.count;
-                
+
                 // 拆分商品名和规格选项，让排版分层更整齐
                 let displayName = name;
                 let optionHtml = "";
@@ -550,13 +529,13 @@
             const finalTotal = Math.round(beforeRoundingTotal * 20) / 20;
             const roundingAmount = finalTotal - beforeRoundingTotal;
 
-            if(document.getElementById('bill-subtotal')) document.getElementById('bill-subtotal').innerText = "RM " + subtotal.toFixed(2);
-            if(document.getElementById('bill-sst')) document.getElementById('bill-sst').innerText = "RM " + sstAmount.toFixed(2);
-            if(document.getElementById('bill-rounding')) document.getElementById('bill-rounding').innerText = (roundingAmount >= 0 ? "+" : "") + "RM " + roundingAmount.toFixed(2);
+            if (document.getElementById('bill-subtotal')) document.getElementById('bill-subtotal').innerText = "RM " + subtotal.toFixed(2);
+            if (document.getElementById('bill-sst')) document.getElementById('bill-sst').innerText = "RM " + sstAmount.toFixed(2);
+            if (document.getElementById('bill-rounding')) document.getElementById('bill-rounding').innerText = (roundingAmount >= 0 ? "+" : "") + "RM " + roundingAmount.toFixed(2);
 
             const formattedTotal = `RM ${finalTotal.toFixed(2)}`;
-            if(document.getElementById('bill-total')) document.getElementById('bill-total').innerText = formattedTotal;
-            if(document.getElementById('cart-btn-total')) document.getElementById('cart-btn-total').innerText = formattedTotal;
+            if (document.getElementById('bill-total')) document.getElementById('bill-total').innerText = formattedTotal;
+            if (document.getElementById('cart-btn-total')) document.getElementById('cart-btn-total').innerText = formattedTotal;
         }
 
         // J. 🔔 自定义弹窗控制
@@ -566,7 +545,7 @@
             const textField = document.getElementById('custom-alert-text');
             const cancelBtn = document.getElementById('custom-alert-cancel');
             const confirmBtn = document.getElementById('custom-alert-confirm');
-            
+
             if (modal && textField) {
                 textField.innerText = text;
                 onCustomConfirmCallback = confirmCallback;
@@ -574,7 +553,7 @@
                 if (isConfirmMode) {
                     if (cancelBtn) cancelBtn.style.display = "block";
                     if (confirmBtn) {
-                        confirmBtn.onclick = function() {
+                        confirmBtn.onclick = function () {
                             if (typeof onCustomConfirmCallback === "function") onCustomConfirmCallback();
                             closeCustomAlert();
                         };
@@ -598,78 +577,206 @@
         function toggleCartPage(show) {
             const cartPage = document.getElementById('cart-page');
             const floatingCart = document.getElementById('floating-cart-btn');
-            
+
             if (cartPage) cartPage.style.display = show ? 'flex' : 'none';
             if (floatingCart) floatingCart.style.display = show ? 'none' : 'flex';
         }
 
-        // L. 🔥 Firebase 云端订单提交引擎
-        function submitOrderToCloud() {
-            // 🧠 核心修复：防止多层嵌套的 DOM（如 span）导致点击穿透或失效，这里直接执行
-            if (typeof myCart === "undefined" || Object.keys(myCart).length === 0) {
-                showCustomAlert("购物车还是空的哦，先加点好吃的吧！");
-                return;
+        async function showSuccessPrompt(defaultMsg) {
+            try {
+                const configRes = await fetch(`https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/shops/${shopId}/settings/flow_config.json`);
+                const config = await configRes.json();
+
+                if (config && config.requirePrepayment) {
+                    // 自动探测浏览器语言
+                    const lang = navigator.language.startsWith('zh') ? 'zh' : 'en';
+                    let promptText = "请前往收银台结账。"; // 兜底文案
+
+                    // 兼容对象格式（多语言）或普通字符串格式
+                    if (typeof config.paymentPrompt === 'object') {
+                        promptText = config.paymentPrompt[lang] || config.paymentPrompt['zh'];
+                    } else if (typeof config.paymentPrompt === 'string') {
+                        promptText = config.paymentPrompt;
+                    }
+
+                    const tableInfo = (tableId && tableId !== '外带') ? `【${tableId}号桌】` : `【外带】`;
+                    showCustomAlert(`${tableInfo} ${promptText}`);
+                } else {
+                    showCustomAlert(defaultMsg);
+                }
+            } catch (err) {
+                // 如果断网或者连不上配置，走默认提示，防止卡死
+                showCustomAlert(defaultMsg);
             }
-            
-            // 弹出提示并直接绑定确认回调
-            showCustomAlert("确定要提交这份订单到后台吗？", true, function() {
-                executeFirebaseSubmit();
-            });
+            clearCartAndUI();
         }
 
-        function executeFirebaseSubmit() {
+        // 2. 核心提交流程引擎 (附带权限判定与后厨数据构造)
+        async function executeFirebaseSubmit() {
+            // 深度拷贝，切断内存污染
             let safeCart = {};
-            for (let key in myCart) {
-                let safeKey = key.replace(/[.#$\[\]]/g, '_'); 
-                safeCart[safeKey] = myCart[key];
+            for (let key in myCart) safeCart[key.replace(/[.#$\[\]]/g, '_')] = JSON.parse(JSON.stringify(myCart[key]));
+
+            const FIREBASE_API_KEY = "AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY";
+            let sysToken = "";
+            try {
+                const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`, {
+                    method: 'POST', body: JSON.stringify({ email: "qrfood@wenxuan.com", password: "qrfood878712", returnSecureToken: true }), headers: { 'Content-Type': 'application/json' }
+                });
+                const authData = await authRes.json();
+                if (authData.idToken) sysToken = authData.idToken;
+                else throw new Error("提权失败");
+            } catch (error) {
+                return showCustomAlert("🚀 云端安全握手失败，请检查网络！");
             }
 
-            // 🧠 核心修复：将变量改为 tableId，解决未定义导致的崩溃
-            const orderData = {
-                shopId: shopId,
-                tableNumber: tableId || "外带", 
-                items: safeCart, 
-                timestamp: new Date().toISOString(),
-                status: "pending" 
-            };
+            const isTakeaway = (!tableId || tableId === "外带");
+            const safeTableId = tableId ? tableId.replace(/[^a-zA-Z0-9]/g, '') : "";
+            const targetOrderId = isTakeaway ? "ORD_" + Date.now() : `ORD_${shopId.substring(0, 4)}_${safeTableId}`;
+            const targetUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${targetOrderId}.json?auth=${sysToken}`;
 
-            const firebaseApiUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json"; 
+            if (isTakeaway) {
+                // 外带单：直接写入，必须携带 kitchenItems
+                const orderData = { shopId, tableNumber: "外带", items: safeCart, kitchenItems: safeCart, timestamp: new Date().toISOString(), status: "pending" };
+                await fetch(targetUrl, { method: "PUT", body: JSON.stringify(orderData) });
+                await showSuccessPrompt("✅ 下单成功！");
+                return;
+            }
 
-            fetch(firebaseApiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(orderData)
-            })
-            .then(response => {
-                if (response.ok) {
-                    showCustomAlert("订单已成功提交！");
-                    
-                    if (typeof myCart === "object" && myCart !== null) {
-                        for (let key in myCart) {
-                            if (myCart.hasOwnProperty(key)) {
-                                delete myCart[key]; 
-                            }
-                        }
+            try {
+                // 堂食单：先查询后追加合并
+                const checkRes = await fetch(`${targetUrl}&_t=${Date.now()}`, { cache: "no-store" });
+                const existingOrder = await checkRes.json();
+
+                if (existingOrder && existingOrder.shopId) {
+                    let mergedItems = existingOrder.items || {};
+                    let kitchenItems = existingOrder.kitchenItems || {};
+
+                    for (let k in safeCart) {
+                        if (mergedItems[k]) mergedItems[k].count += safeCart[k].count;
+                        else mergedItems[k] = JSON.parse(JSON.stringify(safeCart[k]));
+                        if (kitchenItems[k]) kitchenItems[k].count += safeCart[k].count;
+                        else kitchenItems[k] = JSON.parse(JSON.stringify(safeCart[k]));
                     }
-                    
-                    updateCartBadge();
-                    renderCartDetails();
-                    toggleCartPage(false);
-                    
+                    existingOrder.items = mergedItems;
+                    existingOrder.kitchenItems = kitchenItems;
+                    existingOrder.status = "pending";
+                    existingOrder.lastUpdated = new Date().toISOString();
+
+                    await fetch(targetUrl, { method: "PUT", body: JSON.stringify(existingOrder) });
+                    await showSuccessPrompt("✅ 加单成功！已传送至后厨。");
                 } else {
-                    showCustomAlert("⚠️ 传送失败，请稍后再试！");
+                    // 全新开台，强制生成 kitchenItems
+                    const orderData = { shopId, tableNumber: tableId, items: safeCart, kitchenItems: safeCart, timestamp: new Date().toISOString(), status: "pending" };
+                    await fetch(targetUrl, { method: "PUT", body: JSON.stringify(orderData) });
+                    await showSuccessPrompt("✅ 下单成功！");
                 }
-            })
-            .catch(error => {
-                console.error("Firebase 错误:", error);
-                showCustomAlert("🚀 网络连接请求失败，请检查网络！");
-            });
+            } catch (err) {
+                showCustomAlert("🚀 提交失败，请检查网络！");
+            }
+        }
+
+        function clearCartAndUI() {
+            if (typeof myCart === "object") for (let key in myCart) delete myCart[key];
+            updateCartBadge(); renderCartDetails(); toggleCartPage(false);
+        }
+
+        function submitOrderWithId(safeCart, targetOrderId, returnPromise, token) {
+            // 🎯 核心修复：初次开台必须赋予 kitchenItems，否则后厨绝对不会理会！
+            const orderData = {
+                shopId,
+                tableNumber: tableId || "外带",
+                items: JSON.parse(JSON.stringify(safeCart)),
+                kitchenItems: JSON.parse(JSON.stringify(safeCart)), // <== 补上这个，后厨才会出单
+                timestamp: new Date().toISOString(),
+                status: "pending"
+            };
+            const targetUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${targetOrderId}.json?auth=${token}`;
+            const req = fetch(targetUrl, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(orderData) });
+
+            if (returnPromise) return req.then(res => ({ ok: res.ok, isMerge: false }));
+            req.then(res => {
+                if (res.ok) {
+                    showCustomAlert("✅ 下单成功！");
+                    clearCartAndUI();
+                }
+                else showCustomAlert("⚠️ 传送失败，请重试！");
+            }).catch(err => showCustomAlert("🚀 网络故障！"));
+        }
+
+        function clearCartAndUI() {
+            if (typeof myCart === "object") for (let key in myCart) delete myCart[key];
+            updateCartBadge(); renderCartDetails(); toggleCartPage(false);
+        }
+
+        // 辅助引擎 1：独立提交写入 (增加 token 参数接收)
+        function submitOrderWithId(safeCart, targetOrderId, returnPromise, token) {
+            const orderData = { shopId, tableNumber: tableId || "外带", items: safeCart, timestamp: new Date().toISOString(), status: "pending" };
+            // 携带合法的管理员通行证写入
+            const targetUrl = `https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders/${targetOrderId}.json?auth=${token}`;
+            const req = fetch(targetUrl, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(orderData) });
+
+            if (returnPromise) return req.then(res => ({ ok: res.ok, isMerge: false }));
+
+            req.then(res => {
+                if (res.ok) { showCustomAlert("✅ 订单提交成功！"); clearCartAndUI(); }
+                else showCustomAlert("⚠️ 传送失败，请重试！");
+            }).catch(err => showCustomAlert("🚀 网络故障！"));
+        }
+
+        // 辅助引擎 2：清理 UI (保持不变)
+        function clearCartAndUI() {
+            if (typeof myCart === "object") for (let key in myCart) delete myCart[key];
+            updateCartBadge(); renderCartDetails(); toggleCartPage(false);
         }
 
         // 🟢 页面加载后自动执行一次初始化渲染
-        updateCartBadge();
-        renderCartDetails();
+        // 辅助函数 1：创建全新订单
+        function createNewOrder(safeCart, returnPromise = false) {
+            const orderData = {
+                shopId: shopId,
+                tableNumber: tableId || "外带",
+                items: safeCart,
+                timestamp: new Date().toISOString(),
+                status: "pending"
+            };
+
+            const req = fetch("https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+            });
+
+            if (returnPromise) return req;
+
+            req.then(response => {
+                if (response.ok) {
+                    showCustomAlert("✅ 订单已成功提交！");
+                    clearCartAndUI();
+                } else {
+                    showCustomAlert("⚠️ 传送失败，请稍后再试！");
+                }
+            }).catch(error => {
+                console.error("Firebase 错误:", error);
+                showCustomAlert("🚀 网络连接异常，请检查网络！");
+            });
+        }
+
+        // 辅助函数 2：清空本地购物车界面
+        function clearCartAndUI() {
+            if (typeof myCart === "object" && myCart !== null) {
+                for (let key in myCart) {
+                    if (myCart.hasOwnProperty(key)) {
+                        delete myCart[key];
+                    }
+                }
+            }
+            updateCartBadge();
+            renderCartDetails();
+            toggleCartPage(false);
+        }
 
     </script>
 </body>
+
 </html>
