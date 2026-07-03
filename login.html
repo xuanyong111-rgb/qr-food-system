@@ -184,6 +184,10 @@
             color: #2e7d32;
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B5A2B">
+    <link rel="apple-touch-icon" href="./images/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./images/icon-512.png">
     <script src="shops.js"></script>
 </head>
 
@@ -236,13 +240,22 @@
     <script>
         const FIREBASE_API_KEY = " AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY "
         const urlParams = new URLSearchParams(window.location.search);
-        const shopId = urlParams.get('shop');
+        let shopId = urlParams.get('shop');
+
+        // 💡核心改动：如果 URL 里没带 shop 参数（比如从 PWA 图标启动），就去本地缓存拿上次登录成功的 ID
+        if (!shopId) {
+            shopId = localStorage.getItem('pwa_remember_shop');
+        }
 
         window.onload = () => {
             if (!shopId || !allShopsData[shopId]) {
                 document.body.innerHTML = "<h3 style='text-align:center; margin-top:20vh; color:#e74c3c;'>⚠️ 非法访问：请使用专属商家链接登入</h3>";
                 return;
             }
+
+            // 💡核心改动：只要成功进来一次，就把这个店铺 ID 存在手机本地
+            localStorage.setItem('pwa_remember_shop', shopId);
+
             document.getElementById('login-title').innerText = allShopsData[shopId].shopName + " 后台";
 
             const loginToken = localStorage.getItem(`token_${shopId}`);
@@ -382,6 +395,14 @@
         function handleLogout() {
             localStorage.removeItem(`token_${shopId}`);
             window.location.reload();
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA 已激活', reg.scope))
+                    .catch(err => console.error('PWA 激活失败', err));
+            });
         }
     </script>
 </body>

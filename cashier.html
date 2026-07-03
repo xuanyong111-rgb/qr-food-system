@@ -416,6 +416,10 @@
             box-shadow: 0 2px 6px rgba(139, 90, 43, 0.3) !important;
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B5A2B">
+    <link rel="apple-touch-icon" href="./images/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./images/icon-512.png">
 
 </head>
 
@@ -1185,6 +1189,14 @@
                 frame.contentWindow.focus();
                 frame.contentWindow.print();
             }, 200);
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA 已激活', reg.scope))
+                    .catch(err => console.error('PWA 激活失败', err));
+            });
         }
     </script>
 </body>

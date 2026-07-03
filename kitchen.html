@@ -197,6 +197,10 @@
             color: #8B5A2B;
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B5A2B">
+    <link rel="apple-touch-icon" href="./images/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./images/icon-512.png">
 </head>
 
 <body>
@@ -619,5 +623,13 @@
         function closeCustomAlert() {
             const modal = document.getElementById('custom-alert-modal');
             if (modal) modal.style.display = "none";
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA 已激活', reg.scope))
+                    .catch(err => console.error('PWA 激活失败', err));
+            });
         }
     </script>

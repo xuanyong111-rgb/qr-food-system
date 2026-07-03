@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收银与独立记账</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B5A2B">
+    <link rel="apple-touch-icon" href="./images/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./images/icon-512.png">
+</head>
+
+<body style="margin: 0; background-color: #F8F9FA;">
+
+    <div class="pos-container" style="display: flex; height: 100vh; overflow: hidden;">
+
+        <div class="pos-left-panel" style="flex: 2; overflow-y: auto; padding: 20px; background: #FAF6F0;">
+            <div class="search-bar-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="menu-search" placeholder="输入 SKU / 物品名称 / 条码检索..." onkeyup="filterMenu()">
+                </div>
+
+                <div class="add-item-container"
+                    style="background: #FFF; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #EFE2D5;">
+                    <h4 style="margin-top: 0; color: #8B5A2B; font-size: 14px;">➕ 快速添加 SKU (五金/零售)</h4>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="text" id="new-item-barcode" placeholder="条码 (可选)"
+                            style="flex: 1; min-width: 100px; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                        <input type="text" id="new-item-name" placeholder="品名 (如: 螺丝批)"
+                            style="flex: 2; min-width: 120px; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                        <input type="number" id="new-item-price" placeholder="单价 RM"
+                            style="flex: 1; min-width: 80px; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                        <input type="number" id="new-item-stock" placeholder="初始库存"
+                            style="flex: 1; min-width: 80px; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                        <button onclick="addMenuItem()"
+                            style="background: #8B5A2B; color: #FFF; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">保存</button>
+                    </div>
+                </div>
+
+                <div id="menu-container"></div>
+
+                <div class="custom-record-panel"
+                    style="padding: 20px; background: #FFF; border-radius: 12px; margin-top: 20px; border: 1px solid #EFE2D5;">
+                    <h3 style="color: #8B5A2B; margin-top: 0; font-size: 16px;">📝 独立收支 / 临时记账</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="record-name" placeholder="款项名称 (例: 临时加菜)"
+                            style="flex: 2; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                        <input type="number" id="record-amount" placeholder="金额 (RM)"
+                            style="flex: 1; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <input type="file" id="record-photo" accept="image/*" style="flex: 1; font-size: 12px;">
+                        <button onclick="submitCustomRecord()"
+                            style="background: #D2691E; color: #FFF; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">存入总账</button>
+                    </div>
+                    <h4
+                        style="color: #633E1A; border-bottom: 1px dashed #EFE2D5; padding-bottom: 8px; font-size: 14px; margin-bottom: 5px;">
+                        📜 今日记账历史</h4>
+                    <div id="record-history-list" style="max-height: 150px; overflow-y: auto; padding-top: 5px;"></div>
+                </div>
+            </div>
+
+            <div class="pos-right-panel"
+                style="flex: 1; background: #FFF; border-left: 2px solid #EFE2D5; display: flex; flex-direction: column;">
+                <div
+                    style="padding: 15px; background: #FFFBF7; border-bottom: 1px solid #EFE2D5; font-weight: bold; color: #8B5A2B;">
+                    🛒 当前订单明细
+                </div>
+
+                <div id="cart-items-list" style="flex: 1; overflow-y: auto; padding: 15px;"></div>
+
+                <div class="pos-checkout-section"
+                    style="padding: 20px; border-top: 2px dashed #EFE2D5; background: #FAF6F0;">
+                    <div
+                        style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #D2691E; margin-bottom: 15px;">
+                        <span>总计需付:</span>
+                        <span id="pos-bill-total">RM 0.00</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button onclick="setPosPayMethod('现钱')" class="pay-method-btn active">现钱</button>
+                        <button onclick="setPosPayMethod('QR支付')" class="pay-method-btn">QR支付</button>
+                    </div>
+                    <button onclick="executePosCheckout()"
+                        style="width: 100%; background: #8B5A2B; color: #FFF; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; border: none; cursor: pointer;">
+                        确认收款并结账
+                    </button>
+                </div>
+
+                <div class="pos-history-section"
+                    style="padding: 15px; background: #FFFBF7; border-top: 2px solid #EFE2D5; height: 250px; display: flex; flex-direction: column;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; color: #8B5A2B; font-size: 14px;">🧾 今日收银历史纪录</h4>
+                        <button onclick="loadPosHistory()"
+                            style="font-size: 12px; padding: 4px 8px; cursor: pointer; border-radius: 4px; border: 1px solid #EFE2D5; background: #FFF;">刷新</button>
+                    </div>
+                    <div id="pos-history-list" style="font-size: 13px; color: #555; overflow-y: auto; flex: 1;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="custom-record-panel"
+            style="padding: 20px; background: #FFF; border-radius: 12px; margin-top: 20px; border: 1px solid #EFE2D5;">
+            <h3 style="color: #8B5A2B; margin-top: 0;">📝 独立收支 / 临时记账</h3>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <input type="text" id="record-name" placeholder="款项名称 (例: 临时加菜 / 供应商付款)"
+                    style="flex: 2; padding: 10px; border: 1px solid #E6D5C5; border-radius: 8px; outline: none;">
+                <input type="number" id="record-amount" placeholder="金额 (RM)"
+                    style="flex: 1; padding: 10px; border: 1px solid #E6D5C5; border-radius: 8px; outline: none;">
+            </div>
+
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                <input type="file" id="record-photo" accept="image/*" style="flex: 1; font-size: 13px;">
+                <button onclick="submitCustomRecord()"
+                    style="background: #D2691E; color: #FFF; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    存入总账
+                </button>
+            </div>
+
+            <h4 style="color: #633E1A; border-bottom: 1px dashed #EFE2D5; padding-bottom: 8px;">📜 今日记账历史</h4>
+            <div id="record-history-list" style="max-height: 250px; overflow-y: auto; padding-top: 10px;">
+            </div>
+            <div class="add-item-container"
+                style="background: #FFF; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #EFE2D5;">
+                <h4 style="margin-top: 0; color: #8B5A2B; font-size: 14px;">➕ 快速添加物品栏</h4>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="new-item-name" placeholder="品名 (如: 冰红茶)"
+                        style="flex: 2; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                    <input type="number" id="new-item-price" placeholder="RM"
+                        style="flex: 1; padding: 8px; border: 1px solid #E6D5C5; border-radius: 6px; outline: none;">
+                    <button onclick="addMenuItem()"
+                        style="background: #8B5A2B; color: #FFF; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">保存</button>
+                </div>
+            </div>
+
+            <div class="pos-history-section"
+                style="padding: 15px; background: #FFFBF7; border-top: 2px solid #EFE2D5; flex: 1; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; color: #8B5A2B;">🧾 今日收银历史纪录</h4>
+                    <button onclick="loadPosHistory()"
+                        style="font-size: 12px; padding: 4px 8px; cursor: pointer; border-radius: 4px; border: 1px solid #EFE2D5; background: #FFF;">刷新</button>
+                </div>
+                <div id="pos-history-list" style="font-size: 13px; color: #555;"></div>
+            </div>
+        </div>
+        <script>
+            const BASE_DB_URL = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app/hardware_pos";
+
+            let posCart = []; // POS 购物车数组
+            let currentPayMethod = '现钱';
+
+            function setPosPayMethod(method) {
+                currentPayMethod = method;
+                document.querySelectorAll('.pay-method-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.innerText === method);
+                });
+            }
+
+            // --- 修复1：补全菜单搜索过滤功能 ---
+            function filterMenu() {
+                const searchTerm = document.getElementById('menu-search').value.toLowerCase();
+                const items = document.querySelectorAll('.menu-item-card');
+                items.forEach(item => {
+                    const itemName = item.getAttribute('data-name').toLowerCase();
+                    item.style.display = itemName.includes(searchTerm) ? 'block' : 'none';
+                });
+            }
+
+            // --- 修复2：补全添加到购物车的核心逻辑 ---
+            function addToCart(key, name, price) {
+                const existingItem = posCart.find(item => item.key === key);
+                if (existingItem) {
+                    existingItem.qty += 1;
+                } else {
+                    posCart.push({ key, name, price, qty: 1 });
+                }
+                renderCart();
+            }
+
+            function renderCart() {
+                const listEl = document.getElementById('cart-items-list');
+                listEl.innerHTML = '';
+                let totalAmount = 0;
+
+                posCart.forEach((item, index) => {
+                    totalAmount += item.price * item.qty;
+                    listEl.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                        <div>
+                            <div style="font-weight: bold; color: #4A3E3D;">${item.name}</div>
+                            <div style="font-size: 12px; color: #888;">RM ${item.price.toFixed(2)} x ${item.qty}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <strong style="color: #D2691E;">RM ${(item.price * item.qty).toFixed(2)}</strong>
+                            <button onclick="removeFromCart(${index})" style="background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">X</button>
+                        </div>
+                    </div>
+                `;
+                });
+                document.getElementById('pos-bill-total').innerText = `RM ${totalAmount.toFixed(2)}`;
+            }
+
+            function removeFromCart(index) {
+                posCart.splice(index, 1);
+                renderCart();
+            }
+
+            // 快速添加物品至 Firebase 菜单节点
+            async function addMenuItem() {
+                const barcode = document.getElementById('new-item-barcode').value.trim();
+                const name = document.getElementById('new-item-name').value.trim();
+                const price = parseFloat(document.getElementById('new-item-price').value);
+                const stock = parseInt(document.getElementById('new-item-stock').value) || 0;
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+
+                if (!name || isNaN(price) || !sysToken) return alert("请填写完整物品名称与价格，并确保已登入！");
+
+                const itemId = barcode ? `SKU_${barcode}` : `ITEM_${Date.now()}`;
+                const itemData = { name, price, stock, barcode, isAvailable: true };
+
+                try {
+                    // 更改为 hardware_pos/skus 节点
+                    await fetch(`${BASE_DB_URL}/skus/${shopId}/${itemId}.json?auth=${sysToken}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(itemData)
+                    });
+                    ['new-item-barcode', 'new-item-name', 'new-item-price', 'new-item-stock'].forEach(id => document.getElementById(id).value = '');
+                    loadMenuItems();
+                } catch (e) {
+                    alert("物品添加失败，请检查网络环境。");
+                }
+            }
+
+            // 拉取并渲染物品列表
+            async function loadMenuItems() {
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+                try {
+                    // 更改为 hardware_pos/skus 节点
+                    const res = await fetch(`${BASE_DB_URL}/skus/${shopId}.json?auth=${sysToken}`);
+                    const data = await res.json();
+                    const container = document.getElementById('menu-container');
+                    container.innerHTML = '';
+
+                    if (!data) return container.innerHTML = '<div style="padding: 15px; color: #999;">物品栏为空，请先添加 SKU</div>';
+
+                    let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 0;">';
+                    Object.keys(data).forEach(key => {
+                        const item = data[key];
+                        if (item.isAvailable) {
+                            // 新增库存显示
+                            html += `
+                <div class="menu-item-card" data-name="${item.name}" onclick="addToCart('${key}', '${item.name}', ${item.price})" style="background: #FFF; padding: 15px; border-radius: 8px; border: 1px solid #EFE2D5; cursor: pointer; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="font-weight: bold; color: #4A3E3D; font-size: 15px;">${item.name}</div>
+                    <div style="color: #D2691E; margin-top: 5px; font-weight: bold;">RM ${item.price.toFixed(2)}</div>
+                    <div style="color: #888; font-size: 12px; margin-top: 5px;">📦 库存: ${item.stock || 0}</div>
+                </div>`;
+                        }
+                    });
+                    html += '</div>';
+                    container.innerHTML = html;
+                } catch (e) {
+                    console.error("加载物品栏异常", e);
+                }
+            }
+
+            // POS 收银结账执行核心
+            async function executePosCheckout() {
+                if (posCart.length === 0) return alert("购物车为空，无法结账！");
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+                if (!sysToken) return alert("身份验证失效！");
+
+                const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+                const orderId = "POS_" + Date.now();
+                const totalAmount = posCart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+                const orderData = {
+                    shopId: shopId,
+                    recordType: "pos_order",
+                    items: posCart,
+                    finalTotal: totalAmount,
+                    payMethod: currentPayMethod,
+                    checkoutTime: new Date().toLocaleString(),
+                    status: "archive",
+                    isPaid: true
+                };
+
+                try {
+                    // 已替换为 BASE_DB_URL (指向 hardware_pos)
+                    await fetch(`${BASE_DB_URL}/history/${todayStr}/${orderId}.json?auth=${sysToken}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(orderData)
+                    });
+
+                    posCart = [];
+                    renderCart();
+                    loadPosHistory();
+                    alert("✅ 收银账单已成功归档入总账！");
+                } catch (e) {
+                    alert("结账阻断：网络或权限异常。");
+                }
+            }
+
+            // 拉取并渲染今日 POS 收银历史纪录
+            async function loadPosHistory() {
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+                const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+                try {
+                    // 已替换为 BASE_DB_URL (指向 hardware_pos)
+                    const res = await fetch(`${BASE_DB_URL}/history/${todayStr}.json?auth=${sysToken}`);
+                    const data = await res.json();
+                    const listEl = document.getElementById('pos-history-list');
+                    listEl.innerHTML = '';
+
+                    if (!data) return listEl.innerHTML = '<div style="color: #999; padding: 10px;">今日暂无收银记录</div>';
+
+                    let html = '';
+                    Object.keys(data).reverse().forEach(key => {
+                        const item = data[key];
+                        if (item.shopId === shopId && item.recordType === "pos_order") {
+                            const itemsDesc = item.items ? item.items.map(i => `${i.name} x${i.qty}`).join('，') : '无明细';
+                            html += `
+                <div style="border-bottom: 1px dashed #EFE2D5; padding: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <strong style="color: #4A3E3D; font-size: 14px;">RM ${item.finalTotal.toFixed(2)} (${item.payMethod})</strong>
+                        <span style="font-size: 12px; color: #A08875;">${item.checkoutTime.split(' ')[1]}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #888; line-height: 1.4;">[明细] ${itemsDesc}</div>
+                </div>`;
+                        }
+                    });
+                    listEl.innerHTML = html || '<div style="color: #999; padding: 10px;">今日暂无收银记录</div>';
+                } catch (e) {
+                    console.error("历史拉取异常", e);
+                }
+            }
+
+            // 页面初始化时挂载数据
+            window.addEventListener('DOMContentLoaded', () => {
+                loadMenuItems();
+                loadPosHistory();
+                if (typeof loadCustomRecordsHistory === 'function') loadCustomRecordsHistory();
+            });
+
+            // 核心：纯前端极速压缩照片
+            function compressImageToBase64(file) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const maxW = 600;
+                            const scale = img.width > maxW ? maxW / img.width : 1;
+                            canvas.width = img.width * scale;
+                            canvas.height = img.height * scale;
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.6));
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            async function submitCustomRecord() {
+                const name = document.getElementById('record-name').value.trim();
+                const amount = parseFloat(document.getElementById('record-amount').value);
+                const photoFile = document.getElementById('record-photo').files[0];
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+
+                if (!name || isNaN(amount) || !sysToken) return alert("请填写完整名称、金额并确保已登入！");
+
+                let photoBase64 = "";
+                if (photoFile) photoBase64 = await compressImageToBase64(photoFile);
+
+                const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+                const recordId = "REC_" + Date.now();
+
+                const recordData = {
+                    shopId: shopId,
+                    recordType: "custom",
+                    itemName: name,
+                    finalTotal: amount,
+                    photoData: photoBase64,
+                    checkoutTime: new Date().toLocaleString(),
+                    status: "archive",
+                    isPaid: true
+                };
+
+                try {
+                    // 已替换为 BASE_DB_URL (指向 hardware_pos)
+                    await fetch(`${BASE_DB_URL}/history/${todayStr}/${recordId}.json?auth=${sysToken}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(recordData)
+                    });
+
+                    alert("✅ 记录已成功打入总账！");
+                    document.getElementById('record-name').value = '';
+                    document.getElementById('record-amount').value = '';
+                    document.getElementById('record-photo').value = '';
+                    loadCustomRecordsHistory();
+                } catch (e) {
+                    alert("❌ 上传失败，请检查网络！");
+                }
+            }
+
+            async function loadCustomRecordsHistory() {
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+                const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+                try {
+                    // 已替换为 BASE_DB_URL (指向 hardware_pos)
+                    const res = await fetch(`${BASE_DB_URL}/history/${todayStr}.json?auth=${sysToken}`);
+                    const data = await res.json();
+                    const listEl = document.getElementById('record-history-list');
+                    listEl.innerHTML = '';
+
+                    if (!data) return listEl.innerHTML = '<div style="color: #999; font-size: 13px;">今日暂无独立记账记录</div>';
+
+                    let html = '';
+                    Object.keys(data).reverse().forEach(key => {
+                        const item = data[key];
+                        if (item.shopId === shopId && item.recordType === "custom") {
+                            const imgHtml = item.photoData
+                                ? `<img src="${item.photoData}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; cursor: pointer;" onclick="window.open('${item.photoData}')">`
+                                : `<div style="width: 40px; height: 40px; background: #eee; border-radius: 6px; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #aaa;">无图</div>`;
+
+                            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #FDF5ED;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${imgHtml}
+                        <div>
+                            <div style="font-weight: bold; color: #4A3E3D; font-size: 14px;">${item.itemName}</div>
+                            <div style="font-size: 12px; color: #A08875;">${item.checkoutTime}</div>
+                        </div>
+                    </div>
+                    <div style="font-weight: bold; color: #D2691E;">RM ${item.finalTotal.toFixed(2)}</div>
+                </div>`;
+                        }
+                    });
+                    listEl.innerHTML = html || '<div style="color: #999; font-size: 13px;">今日暂无独立记账记录</div>';
+                } catch (e) {
+                    console.error("加载记录失败");
+                }
+            }
+
+            if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA 已激活', reg.scope))
+                    .catch(err => console.error('PWA 激活失败', err));
+            });
+        }
+        </script>
+</body>
+
+</html>
