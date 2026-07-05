@@ -1,7 +1,7 @@
 const allShopsData = {
     "wuwangxin_a": {
         shopName: "勿忘心 🌟",
-        logoUrl: "images/wuwangxin_a/勿忘心.png", 
+        logoUrl: "images/wuwangxin_a/wuwangxin.png", 
         slogan: "每日现烤 · 纯正手作 · 幸福滋味",
         maxDevices: 3,
         accounts: {
