@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>店铺导览展示</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&display=swap');
+
+        .header-video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 280px; /* 稍微加高，给影片更多展示空间 */
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end; /* 核心修改：将内容强制推到最下方 */
+            justify-content: center;
+            margin-bottom: 25px;
+            background: #F7EBE1;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 4px 15px rgba(139, 90, 43, 0.1);
+        }
+        .header-video-wrapper video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .header-overlay {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 40px 20px 25px 20px;
+            text-align: center;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 100%);
+        }
+        .header-overlay h1 {
+            /* 核心修改：引入高级中文潦草行书字体，并设置后备字体 */
+            font-family: 'Zhi Mang Xing', 'STXingkai', 'Xingkai SC', cursive;
+            font-size: 46px; 
+            color: #111; 
+            margin-bottom: 4px;
+            font-weight: normal; 
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.9); 
+        }
+        .header-overlay p {
+            font-size: 14px;
+            color: #333; /* 深灰近黑 */
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+        }
+        /* 门面专属追加样式：双列图片网格 */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 10px;
+        }
+        .showcase-item {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(139, 90, 43, 0.05);
+            text-align: center;
+            padding-bottom: 12px;
+        }
+        .showcase-item img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+        }
+        .showcase-item h3 {
+            font-size: 15px;
+            font-weight: bold;
+            color: #4A3E3D;
+            margin: 10px 0 4px 0;
+            padding: 0 5px;
+        }
+        .showcase-item p {
+            font-size: 13px;
+            color: #D2691E;
+            font-weight: bold;
+        }
+        .top-picks-wrapper {
+            margin: 10px 0 25px 0;
+            padding: 0 10px;
+        }
+        .top-picks-title {
+            font-size: 18px;
+            color: #8B5A2B;
+            border-left: 4px solid #CD853F;
+            padding-left: 10px;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+        .top-picks-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch; /* 强化手机端丝滑滑动 */
+            cursor: grab; /* 鼠标悬浮时显示抓手图标 */
+        }
+        .top-picks-scroll:active {
+            cursor: grabbing; /* 鼠标按下时显示抓紧图标 */
+        }
+        .top-picks-scroll::-webkit-scrollbar {
+            display: none; 
+        }
+        .top-item {
+            min-width: 130px;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(139, 90, 43, 0.1);
+            position: relative;
+            flex-shrink: 0;
+            text-align: center;
+            padding-bottom: 12px;
+        }
+        .top-badge {
+            position: absolute;
+            top: 0; left: 0;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 0 0 12px 0;
+            z-index: 2;
+            background: linear-gradient(135deg, #555, #333); /* Top 4 默认黑灰 */
+        }
+        .top-badge.rank-1 { background: linear-gradient(135deg, #FF4500, #FF8C00); } /* 冠军火红 */
+        .top-badge.rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); } /* 亚军银色 */
+        .top-badge.rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); } /* 季军铜色 */
+        
+        .top-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+        }
+        .top-item h3 {
+            font-size: 14px;
+            color: #4A3E3D;
+            margin: 8px 0 4px 0;
+            padding: 0 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .top-item p {
+            font-size: 13px;
+            color: #D2691E;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+   <div class="header-video-wrapper" id="header-bg-box">
+        <video id="bg-promo-video" autoplay muted loop playsinline style="display: none;"></video>
+        <div class="header-overlay">
+            <h1 id="shop-name">加载中...</h1>
+            <p id="shop-slogan">欢迎光临</p>
+        </div>
+    </div>
+
+    <!-- 宣传视频大框框 (默认隐藏，有数据时显示) -->
+    <div class="video-container" id="promo-video-box" style="display: none;">
+        <video id="promo-video" controls autoplay muted loop playsinline>
+            <source src="" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+    <div id="top-picks-container" style="display: none;"></div>
+    <!-- 门面产品展示区 -->
+    <div id="showcase-container"></div>
+
+    <div class="footer">
+        <p id="shop-footer">© 2026 版权所有</p>
+        <p>欢迎进店选购！</p>
+    </div>
+
+    <script src="shops.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let shopId = urlParams.get('shop') || 'wuwangxin_a';
+        if (shopId === 'null') shopId = 'wuwangxin_a';
+
+        const script = document.createElement('script');
+        script.src = `menus/${shopId}.js`;
+
+        script.onload = function () {
+            const currentShop = typeof allShopsData !== 'undefined' ? allShopsData[shopId] : null;
+            
+            if (currentShop) {
+                document.getElementById('shop-name').innerText = currentShop.shopName;
+                document.title = `🌟 ${currentShop.shopName} | 店铺导览 🌟`;
+                
+                if (currentShop.slogan) {
+                    document.getElementById('shop-slogan').innerText = currentShop.slogan;
+                }
+                
+                if (document.getElementById('shop-footer')) {
+                    document.getElementById('shop-footer').innerText = `© 2026 ${currentShop.shopName} 版权所有`;
+                }
+
+                if (currentShop.promoVideoUrl) {
+                    const videoEl = document.getElementById('bg-promo-video');
+                    videoEl.src = currentShop.promoVideoUrl;
+                    videoEl.style.display = 'block';
+                }
+
+                // 渲染纯展示网格
+               if (window.currentShopMenu) {
+                    let allItems = [];
+                    window.currentShopMenu.forEach(cat => {
+                        if(cat.items) allItems.push(...cat.items);
+                    });
+                    
+                    let top4Items = allItems.filter(item => item.topRank).sort((a, b) => a.topRank - b.topRank).slice(0, 4);
+                    if (top4Items.length === 0) top4Items = allItems.slice(0, 4);
+
+                    if (top4Items.length > 0) {
+                        let topHtml = `
+                            <div class="top-picks-wrapper">
+                                <div class="top-picks-title">🔥 最推荐！ </div>
+                                <div class="top-picks-scroll">
+                        `;
+                        top4Items.forEach((item, index) => {
+                            let rankClass = index < 3 ? `rank-${index + 1}` : '';
+                            topHtml += `
+                                <div class="top-item">
+                                    <div class="top-badge ${rankClass}">TOP ${index + 1}</div>
+                                    <img src="${item.imgUrl || 'images/default-bread.png'}" alt="${item.name}">
+                                    <h3>${item.name}</h3>
+                                    <p>${item.price}</p>
+                                </div>
+                            `;
+                        });
+                        topHtml += `</div></div>`;
+                        document.getElementById('top-picks-container').innerHTML = topHtml;
+                        document.getElementById('top-picks-container').style.display = 'block';
+
+                        const slider = document.querySelector('.top-picks-scroll');
+                        if (slider) {
+                            let isDown = false;
+                            let startX;
+                            let scrollLeft;
+
+                            slider.addEventListener('mousedown', (e) => {
+                                isDown = true;
+                                startX = e.pageX - slider.offsetLeft;
+                                scrollLeft = slider.scrollLeft;
+                            });
+                            slider.addEventListener('mouseleave', () => { isDown = false; });
+                            slider.addEventListener('mouseup', () => { isDown = false; });
+                            slider.addEventListener('mousemove', (e) => {
+                                if (!isDown) return;
+                                e.preventDefault();
+                                const x = e.pageX - slider.offsetLeft;
+                                const walk = (x - startX) * 1.5;
+                                slider.scrollLeft = scrollLeft - walk;
+                            });
+                        }
+                    }
+
+                    let html = '';
+                    window.currentShopMenu.forEach(cat => {
+                        html += `<div class="category-title">${cat.categoryTitle}</div>`;
+                        html += `<div class="showcase-grid">`;
+                        cat.items.forEach(item => {
+                            html += `
+                                <div class="showcase-item">
+                                   <img src="${item.imgUrl || 'images/default-bread.png'}" alt="${item.name}">
+                                   <h3>${item.name}</h3>
+                                   <p>${item.price}</p>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    });
+                    document.getElementById('showcase-container').innerHTML = html;
+                }
+            }
+        };
+
+        script.onerror = function () {
+            document.getElementById('shop-name').innerText = "展示信息加载失败 ❌";
+            document.getElementById('shop-slogan').innerHTML = `找不到文件 <strong style="color:red;">menus/${shopId}.js</strong>`;
+        };
+
+        document.head.appendChild(script);
+    </script>
+</body>
+
+</html>

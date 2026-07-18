@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>团餐接单与设定总控台</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fbf7f0;
+            padding: 15px;
+            color: #5d4037;
+            margin: 0;
+        }
+
+        /* 顶部导航与精美按钮 UI */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto 20px auto;
+            border-bottom: 2px dashed #f3ebe1;
+            padding-bottom: 15px;
+        }
+
+        .header-title {
+            color: #8B5A2B;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: #FFFBF7;
+            color: #8B5A2B;
+            border: 1px solid #E6D5C5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(139, 90, 43, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background: #E6D5C5;
+        }
+
+        .history-btn {
+            background: #8B5A2B;
+            color: white;
+            border-color: #8B5A2B;
+        }
+
+        .history-btn:hover {
+            background: #633E1A;
+        }
+
+        /* 隐藏式设定区 */
+        .admin-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 1000px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 4px 15px rgba(139, 90, 43, 0.05);
+            border: 1px solid #f3ebe1;
+        }
+
+        .update-btn {
+            width: 100%;
+            background: #8B5A2B;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .update-btn:disabled {
+            background: #d7ccc8;
+            cursor: not-allowed;
+        }
+
+        /* 高级定制订单看板网格 */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .order-card {
+            background: #FFFFFF;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(139, 90, 43, 0.06);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #FAF6F0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(139, 90, 43, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #EFE2D5;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .order-id {
+            font-weight: 800;
+            color: #4A3E3D;
+            font-size: 15px;
+        }
+
+        .status-badge {
+            background: #FFFBF7;
+            color: #D2691E;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #EFE2D5;
+        }
+
+        .order-row {
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bold {
+            font-weight: 800;
+            color: #4A3E3D;
+            font-size: 15px;
+        }
+
+        .order-code {
+            background: #FFF5F5;
+            color: #C62828;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 900;
+            margin: 15px 0;
+            border: 1px dashed #FFCDD2;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        /* 交互按钮微渐变质感 */
+        .btn-verify {
+            flex: 2;
+            background: linear-gradient(135deg, #8B5A2B, #633E1A);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(139, 90, 43, 0.2);
+            font-size: 14px;
+        }
+
+        .btn-verify:active {
+            transform: scale(0.96);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #FFFDF9;
+            color: #C62828;
+            border: 1px solid #FFCDD2;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-cancel:active {
+            background: #FFF5F5;
+            transform: scale(0.96);
+        }
+
+        /* 模态框及全局高级弹窗配置 */
+        .modal-mask {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(74, 62, 61, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .history-modal-content {
+            background: #FAF6F0;
+            padding: 25px;
+            border-radius: 20px;
+            width: 95%;
+            max-width: 460px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .close-history {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #8B5A2B;
+            font-weight: bold;
+        }
+
+        .history-item-card {
+            background: #FFF;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #EFE2D5;
+            box-shadow: 0 2px 6px rgba(139, 90, 43, 0.03);
+            transition: 0.2s;
+        }
+
+        .history-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(139, 90, 43, 0.08);
+        }
+
+        .alert-btn {
+            flex: 1;
+            border: none;
+            padding: 12px 0;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .alert-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-bar">
+        <h2 class="header-title">📦 实时看板</h2>
+        <div class="header-actions">
+            <button class="action-btn history-btn" onclick="openGroupHistory()">📜 历史记录</button>
+            <button class="action-btn" onclick="toggleSettings()">🪛 收起/展开设定</button>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal-mask" onclick="if(event.target === this) closeGroupHistory()">
+        <div class="history-modal-content">
+            <span class="close-history" onclick="closeGroupHistory()">&times;</span>
+            <h2
+                style="color: #8B5A2B; margin-top: 0; font-size: 20px; border-bottom: 2px dashed #E6D5C5; padding-bottom: 10px; text-align: center;">
+                📜 历史对账记录</h2>
+            <div id="history-list" style="margin-top: 20px;">加载中...</div>
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" class="modal-mask">
+        <div
+            style="background: #FAF6F0; width: 85%; max-width: 320px; border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #FDF5ED;">
+            <div id="custom-alert-text"
+                style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">提示内容
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="custom-alert-cancel" class="alert-btn"
+                    style="display: none; background: #E6D5C5; color: #633E1A;" onclick="closeCustomAlert()">取
+                    消</button>
+                <button id="custom-alert-confirm" class="alert-btn" style="background: #8B5A2B; color: white;">确
+                    定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-card" id="settings-panel" style="display: none;">
+        <h3 style="color: #8B5A2B; margin-top: 0;">📝 菜单设定</h3>
+        <p style="font-size: 13px; color: #8d6e63;">输入名称与价格，点击“➕”无限添加。</p>
+
+        <div id="dynamic-menu-inputs">
+            <div class="menu-input-row"
+                style="display: flex; gap: 12px; margin-bottom: 15px; align-items: center; background: #FFFBF7; padding: 12px; border: 1px solid #EFE2D5; border-radius: 12px; box-sizing: border-box; width: 100%;">
+                <div style="flex: 1; min-width: 0;">
+                    <input type="text" class="meal-name" placeholder="套餐名称 (例: 咖喱鸡饭)"
+                        style="width: 100%; padding: 12px; border: 1px solid #d7ccc8; border-radius: 8px; font-weight: bold; box-sizing: border-box; font-size: 15px;">
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <input type="number" class="meal-price" placeholder="价格 (RM)"
+                        style="width: 100px; padding: 12px; border: 1px solid #d7ccc8; border-radius: 8px; font-weight: bold; box-sizing: border-box; font-size: 15px;"
+                        min="0" step="0.01">
+                </div>
+                <button onclick="this.closest('.menu-input-row').remove()"
+                    style="width: 44px; height: 44px; background: #ffebee; color: #c62828; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; flex-shrink: 0;">❌</button>
+            </div>
+        </div>
+        <button onclick="addMenuRow()"
+            style="width: 100%; background: #fdfbf7; color: #8B5A2B; border: 2px dashed #e0d4c3; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 15px; box-sizing: border-box;">➕
+            新增一个套餐</button>
+        <button class="update-btn" id="save-btn" onclick="updateGroupMenu()">🚀 同步到前端菜单</button>
+
+        <h3 style="color: #8B5A2B; margin-top: 30px; border-top: 1px dashed #E6D5C5; padding-top: 20px;">📝 预订表单字段设定
+        </h3>
+        <p style="font-size: 13px; color: #8d6e63;">自定义顾客需要填写的资料（如：姓名、车牌、特殊备注）。</p>
+        <div id="dynamic-form-inputs"></div>
+        <button onclick="addFormFieldRow()"
+            style="width: 100%; background: #fdfbf7; color: #8B5A2B; border: 2px dashed #e0d4c3; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 15px; box-sizing: border-box;">➕
+            新增一个字段</button>
+        <button class="update-btn" id="save-form-btn" onclick="updateFormFields()">🚀 同步表单到前台</button>
+    </div>
+
+    <!-- 实时订单看板网格 -->
+    <div class="orders-grid" id="live-orders-container"></div>
+
+    <script>
+        const dbUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app";
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopId = urlParams.get('shop') || 'wuwangxin_a';
+
+        let eventSource; // 🚨 确保全局只声明一次
+        let isReconnecting = false; // 🔒 防刷屏锁
+
+        // 1. 修复 toggleSettings 的 null 报错
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            if (panel) {
+                panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+            }
+        }
+
+        function saveMenuDraftToLocal() {
+            const rows = document.querySelectorAll('.menu-input-row');
+            let draftItems = [];
+            rows.forEach(row => {
+                const name = row.querySelector('.meal-name').value.trim();
+                const price = row.querySelector('.meal-price').value.trim();
+                const desc = row.querySelector('.meal-desc').value.trim();
+                draftItems.push({ name: name, price: price, desc: desc });
+            });
+            localStorage.setItem(`group_menu_draft_${shopId}`, JSON.stringify(draftItems));
+        }
+
+        function loadMenuDraftFromLocal() {
+            const container = document.getElementById('dynamic-menu-inputs');
+            const localDraft = localStorage.getItem(`group_menu_draft_${shopId}`);
+
+            // 🌟 核心 UI 修复：SaaS 级防挤压的高级输入卡片布局
+            const renderRow = (item) => {
+                const row = document.createElement('div');
+                row.className = 'menu-input-row';
+                row.style.cssText = 'background: #FFFBF7; padding: 15px; border: 1px solid #EFE2D5; border-radius: 12px; margin-bottom: 15px; transition: 0.2s; box-shadow: 0 2px 5px rgba(139,90,43,0.02);';
+                row.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                        <div style="display: flex; gap: 10px; align-items: center; width: 100%;">
+                            <input type="text" class="meal-name" value="${item.name || ''}" placeholder="套餐标题 (如: 豪华家庭餐)" oninput="saveMenuDraftToLocal()" style="flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #E6D5C5; border-radius: 8px; font-weight: bold; font-size: 14px; outline: none; box-sizing: border-box; color: #4A3E3D;">
+                            
+                            <div style="position: relative; width: 95px; flex-shrink: 0;">
+                                <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #A08875; font-size: 13px; font-weight: bold;">RM</span>
+                                <input type="number" class="meal-price" value="${item.price || ''}" placeholder="0.00" oninput="saveMenuDraftToLocal()" style="width: 100%; padding: 10px 10px 10px 36px; border: 1px solid #E6D5C5; border-radius: 8px; font-weight: bold; font-size: 14px; box-sizing: border-box; outline: none; color: #D2691E;">
+                            </div>
+                            
+                            <button onclick="this.closest('.menu-input-row').remove(); saveMenuDraftToLocal();" style="width: 40px; height: 40px; background: #FFF5F5; color: #C62828; border: 1px dashed #FFCDD2; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='#FFEbee'" onmouseout="this.style.background='#FFF5F5'">×</button>
+                        </div>
+                        
+                        <input type="text" class="meal-desc" value="${item.desc || ''}" placeholder="详细描述 (例: 1饭2菜1汤)" oninput="saveMenuDraftToLocal()" style="width: 100%; padding: 10px 12px; border: 1px dashed #E6D5C5; border-radius: 8px; font-size: 13px; box-sizing: border-box; outline: none; background: #FFF; color: #8d6e63;">
+                    </div>
+                `;
+                container.appendChild(row);
+            };
+
+            if (localDraft) {
+                const draftItems = JSON.parse(localDraft);
+                if (draftItems && draftItems.length > 0) {
+                    container.innerHTML = "";
+                    draftItems.forEach(item => renderRow(item));
+                    return;
+                }
+            }
+
+            fetch(`${dbUrl}/menu_config/${shopId}/group_menu.json`)
+                .then(res => res.json())
+                .then(menuItems => {
+                    if (menuItems && Array.isArray(menuItems) && menuItems.length > 0) {
+                        container.innerHTML = "";
+                        menuItems.forEach(item => {
+                            const data = typeof item === 'string' ? { name: item, price: '', desc: '' } : item;
+                            renderRow(data);
+                        });
+                        saveMenuDraftToLocal();
+                    }
+                }).catch(err => console.warn("初始化拉取菜单失败", err));
+        }
+
+        function addMenuRow() {
+            const container = document.getElementById('dynamic-menu-inputs');
+            const row = document.createElement('div');
+            row.className = 'menu-input-row';
+            row.style.cssText = 'background: #FFFBF7; padding: 15px; border: 1px solid #EFE2D5; border-radius: 12px; margin-bottom: 15px; transition: 0.2s; box-shadow: 0 2px 5px rgba(139,90,43,0.02);';
+            row.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <div style="display: flex; gap: 10px; align-items: center; width: 100%;">
+                        <input type="text" class="meal-name" placeholder="套餐标题 (如: 豪华家庭餐)" oninput="saveMenuDraftToLocal()" style="flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #E6D5C5; border-radius: 8px; font-weight: bold; font-size: 14px; outline: none; box-sizing: border-box; color: #4A3E3D;">
+                        
+                        <div style="position: relative; width: 95px; flex-shrink: 0;">
+                            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #A08875; font-size: 13px; font-weight: bold;">RM</span>
+                            <input type="number" class="meal-price" placeholder="0.00" oninput="saveMenuDraftToLocal()" style="width: 100%; padding: 10px 10px 10px 36px; border: 1px solid #E6D5C5; border-radius: 8px; font-weight: bold; font-size: 14px; box-sizing: border-box; outline: none; color: #D2691E;">
+                        </div>
+                        
+                        <button onclick="this.closest('.menu-input-row').remove(); saveMenuDraftToLocal();" style="width: 40px; height: 40px; background: #FFF5F5; color: #C62828; border: 1px dashed #FFCDD2; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='#FFEbee'" onmouseout="this.style.background='#FFF5F5'">×</button>
+                    </div>
+                    
+                    <input type="text" class="meal-desc" placeholder="详细描述 (例: 1饭2菜1汤)" oninput="saveMenuDraftToLocal()" style="width: 100%; padding: 10px 12px; border: 1px dashed #E6D5C5; border-radius: 8px; font-size: 13px; box-sizing: border-box; outline: none; background: #FFF; color: #8d6e63;">
+                </div>
+            `;
+            container.appendChild(row);
+            saveMenuDraftToLocal();
+        }
+
+        async function updateGroupMenu() {
+            let sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            if (!sysToken) return alert("🚨 身份已过期或未登录！请重新登录中控台。");
+
+            const rows = document.querySelectorAll('.menu-input-row');
+            let menuItems = [];
+
+            // 🌟 获取全新的多维数据
+            rows.forEach(row => {
+                const name = row.querySelector('.meal-name').value.trim();
+                const price = row.querySelector('.meal-price').value.trim();
+                const desc = row.querySelector('.meal-desc').value.trim();
+                if (name) menuItems.push({ name: name, price: price, desc: desc });
+            });
+
+            if (menuItems.length === 0) return alert("⚠️ 请至少输入一个有效套餐名称！");
+
+            const updateBtn = document.getElementById('save-btn');
+            updateBtn.innerText = "⏳ 正在同步...";
+            updateBtn.disabled = true;
+
+            try {
+                let response = await fetch(`${dbUrl}/menu_config/${shopId}/group_menu.json?auth=${sysToken}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(menuItems)
+                });
+
+                if (response.status === 401) {
+                    console.warn("🔐 菜单同步凭证已过期，正在后台自动续期...");
+                    const FIREBASE_API_KEY = "AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY";
+                    const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY.trim()}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ email: "qrfood@wenxuan.com", password: "qrfood878712", returnSecureToken: true }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const authData = await authRes.json();
+
+                    if (authData.idToken) {
+                        sysToken = authData.idToken;
+                        localStorage.setItem(`sys_token_${shopId}`, sysToken);
+
+                        response = await fetch(`${dbUrl}/menu_config/${shopId}/group_menu.json?auth=${sysToken}`, {
+                            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(menuItems)
+                        });
+                    }
+                }
+
+                if (!response.ok) throw new Error(`云端拒绝 (${response.status})`);
+
+                alert("✅ 纯文字菜单同步成功！");
+                toggleSettings();
+            } catch (err) {
+                console.error(err);
+                alert("❌ 同步失败: 钥匙彻底失效，请刷新页面或重新登入。");
+            } finally {
+                updateBtn.innerText = "🚀 同步到前端菜单";
+                updateBtn.disabled = false;
+            }
+        }
+
+        async function startLiveOrdersStream() {
+            if (isReconnecting) return;
+
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            if (!sysToken) {
+                document.getElementById('live-orders-container').innerHTML = "<h3 style='color:#c62828; text-align:center;'>🚨 授权已过期，请回中控台 (admin.html) 重新登录！</h3>";
+                return;
+            }
+
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+
+            eventSource = new EventSource(`${dbUrl}/group_orders.json?auth=${sysToken}`);
+
+            const handleFirebaseEvent = function (e) {
+                const parsed = JSON.parse(e.data);
+                if (!parsed) return;
+
+                // 🚨 核心修复：精准判定 Firebase 的单个删除与清空指令，实现无刷实时消失
+                if (parsed.data === null || parsed.data === undefined) {
+                    const orderId = parsed.path.replace(/\//g, '');
+                    if (orderId) {
+                        const card = document.getElementById(`card-${orderId}`);
+                        if (card) card.remove();
+                    } else {
+                        document.getElementById('live-orders-container').innerHTML = "";
+                    }
+                    return;
+                }
+
+                if (parsed.path === "/") {
+                    renderAllOrders(parsed.data);
+                } else {
+                    const currentToken = localStorage.getItem(`sys_token_${shopId}`);
+                    fetch(`${dbUrl}/group_orders.json?auth=${currentToken}`)
+                        .then(res => res.json())
+                        .then(data => renderAllOrders(data))
+                        .catch(err => console.warn("核对流数据失败", err));
+                }
+            };
+
+            eventSource.addEventListener('put', handleFirebaseEvent);
+            eventSource.addEventListener('patch', handleFirebaseEvent);
+
+            eventSource.onerror = async function () {
+                eventSource.close();
+                if (isReconnecting) return;
+                isReconnecting = true;
+                console.warn("监听流断开 (401)，正在安静地静默重连...");
+
+                const FIREBASE_API_KEY = " AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY ";
+                try {
+                    const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY.trim()}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ email: "qrfood@wenxuan.com", password: "qrfood878712", returnSecureToken: true }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const authData = await authRes.json();
+
+                    if (authData.idToken) {
+                        localStorage.setItem(`sys_token_${shopId}`, authData.idToken);
+                        console.log("✅ 监听流凭证续期成功！重新挂载通道...");
+                        isReconnecting = false;
+                        startLiveOrdersStream();
+                    } else {
+                        isReconnecting = false;
+                    }
+                } catch (err) {
+                    isReconnecting = false;
+                }
+            };
+        }
+
+        // 6. 渲染看板
+        function renderAllOrders(ordersData) {
+            window.activeGroupOrders = ordersData || {}; // 🚨 核心新增：缓存活跃订单数据供历史转移使用
+            const container = document.getElementById('live-orders-container');
+            container.innerHTML = "";
+            if (!ordersData) return;
+
+            Object.keys(ordersData).reverse().forEach(orderId => {
+                const order = ordersData[orderId];
+                if (order.shopId !== shopId) return;
+
+                if (order.status === "pending_wa" || order.status === "verified") {
+                    const statusText = order.status === "pending_wa" ? "⏳ 待对暗号" : "✅ 已核实(待取)";
+                    const btnHtml = order.status === "pending_wa"
+                        ? `<button class="btn-verify" onclick="updateOrderStatus('${orderId}', 'verified')">🔑 核对暗号无误</button>`
+                        : `<button class="btn-verify" style="background:#2e7d32;" onclick="updateOrderStatus('${orderId}', 'completed')">🛍️ 交付并结账</button>`;
+
+                    // 🌟 动态客户字段：精简卡片 + 点击展开详细表单
+                    let primaryName = order.customerName || "顾客";
+                    let fullDetailsStr = order.customerDataStr ? order.customerDataStr.replace(/ \| /g, '<br>') : (order.address ? `📍 配送地址: ${order.address}` : '未提供地址');
+
+                    let customerHtml = `
+                <div onclick="let d = this.nextElementSibling; let i = this.lastElementChild; if(d.style.display==='none'){d.style.display='block';i.innerText='▲ 收起';}else{d.style.display='none';i.innerText='▼ 展开';}" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <div class="order-row bold" style="margin-bottom:0;"><span>👤 ${primaryName}</span></div>
+                    <span style="font-size:12px; color:#8B5A2B; background:#FFFBF7; border:1px solid #EFE2D5; padding:2px 8px; border-radius:10px; font-weight:bold; flex-shrink: 0;">▼ 展开</span>
+                </div>
+                <div style="display:none; font-size:13px; color:#633E1A; background:#FFFBF7; padding:8px; border-radius:8px; border:1px dashed #EFE2D5; margin-bottom:8px; line-height:1.6;">
+                    ${fullDetailsStr}
+                </div>
+            `;
+
+                    container.innerHTML += `
+                <div class="order-card" id="card-${orderId}">
+                    <div class="order-header">
+                        <span class="order-id">单号: #${orderId.slice(-4)}</span>
+                        <span class="status-badge">${statusText}</span>
+                    </div>
+                    ${customerHtml}
+                    <div style="margin: 10px 0; border-left: 3px solid #8B5A2B; padding-left: 10px; color: #4A3E3D; font-weight: bold;">${order.details}</div>
+                    <div class="order-code">防伪暗号: ${order.secureCode}</div>
+                    <div class="btn-group">
+                        <button class="btn-cancel" onclick="cancelOrder('${orderId}')">🚫 作废</button>
+                        ${btnHtml}
+                    </div>
+                </div>
+            `;
+                }
+            });
+        }
+
+        let onCustomConfirmCallback = null;
+
+        function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            const textField = document.getElementById('custom-alert-text');
+            const cancelBtn = document.getElementById('custom-alert-cancel');
+            const confirmBtn = document.getElementById('custom-alert-confirm');
+
+            if (modal && textField) {
+                textField.innerHTML = text;
+                onCustomConfirmCallback = confirmCallback;
+                cancelBtn.style.display = isConfirmMode ? 'block' : 'none';
+
+                confirmBtn.onclick = function () {
+                    if (isConfirmMode && typeof onCustomConfirmCallback === "function") onCustomConfirmCallback();
+                    closeCustomAlert();
+                };
+                modal.style.display = "flex";
+            }
+        }
+
+        function closeCustomAlert() { document.getElementById('custom-alert-modal').style.display = "none"; }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            if (!sysToken) return;
+
+            if (newStatus === 'completed') {
+                showCustomAlert("🛍️ 确定要将该订单标记为【已交付并结账】吗？", true, async function () {
+                    const orderToSave = window.activeGroupOrders[orderId];
+                    if (!orderToSave) return;
+
+                    // 🌟 核心重构：多选解耦价格计算引擎快照
+                    let snapshotTotal = 0;
+                    try {
+                        const menuRes = await fetch(`${dbUrl}/menu_config/${shopId}/group_menu.json`);
+                        const menuItems = await menuRes.json();
+                        let menuMap = {};
+                        if (Array.isArray(menuItems)) {
+                            menuItems.forEach(item => { if (item && item.name) menuMap[item.name.trim()] = parseFloat(item.price) || 0; });
+                        }
+                        if (orderToSave.details) {
+                            orderToSave.details.split(',').forEach(segment => {
+                                if (segment.includes('x')) {
+                                    const lastXIndex = segment.lastIndexOf('x');
+                                    const mealName = segment.substring(0, lastXIndex).trim();
+                                    const detailQty = parseInt(segment.substring(lastXIndex + 1).trim()) || 0;
+                                    snapshotTotal += (menuMap[mealName] || 0) * detailQty;
+                                }
+                            });
+                        }
+                    } catch (e) { console.warn("价格快照抓取失败", e); }
+
+                    orderToSave.status = "completed";
+                    orderToSave.checkoutTime = new Date().toLocaleString();
+                    orderToSave.finalTotal = snapshotTotal;
+
+                    const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+                    await fetch(`${dbUrl}/group_history/${shopId}/${todayStr}/${orderId}.json?auth=${sysToken}`, {
+                        method: 'PUT', body: JSON.stringify(orderToSave)
+                    });
+                    await fetch(`${dbUrl}/group_orders/${orderId}.json?auth=${sysToken}`, { method: 'DELETE' });
+
+                    const card = document.getElementById(`card-${orderId}`);
+                    if (card) card.remove();
+                    showCustomAlert("✅ 成功交付并归档到历史记录！");
+                });
+            } else {
+                await fetch(`${dbUrl}/group_orders/${orderId}.json?auth=${sysToken}`, {
+                    method: 'PATCH', body: JSON.stringify({ status: newStatus })
+                });
+            }
+        }
+
+        async function cancelOrder(orderId) {
+            showCustomAlert("🚫 警告：确定要彻底作废此团餐订单吗？", true, async function () {
+                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+                const orderToSave = window.activeGroupOrders[orderId];
+                if (!orderToSave) return;
+
+                // 🌟 核心重构：多选解耦作废损失快照
+                let snapshotTotal = 0;
+                try {
+                    const menuRes = await fetch(`${dbUrl}/menu_config/${shopId}/group_menu.json`);
+                    const menuItems = await menuRes.json();
+                    let menuMap = {};
+                    if (Array.isArray(menuItems)) {
+                        menuItems.forEach(item => { if (item && item.name) menuMap[item.name.trim()] = parseFloat(item.price) || 0; });
+                    }
+                    if (orderToSave.details) {
+                        orderToSave.details.split(',').forEach(segment => {
+                            if (segment.includes('x')) {
+                                const lastXIndex = segment.lastIndexOf('x');
+                                const mealName = segment.substring(0, lastXIndex).trim();
+                                const detailQty = parseInt(segment.substring(lastXIndex + 1).trim()) || 0;
+                                snapshotTotal += (menuMap[mealName] || 0) * detailQty;
+                            }
+                        });
+                    }
+                } catch (e) { }
+
+                orderToSave.status = "cancelled";
+                orderToSave.cancelTime = new Date().toLocaleString();
+                orderToSave.finalTotal = snapshotTotal;
+
+                const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+                await fetch(`${dbUrl}/group_history/${shopId}/${todayStr}/${orderId}.json?auth=${sysToken}`, {
+                    method: 'PUT', body: JSON.stringify(orderToSave)
+                });
+                await fetch(`${dbUrl}/group_orders/${orderId}.json?auth=${sysToken}`, { method: 'DELETE' });
+
+                const card = document.getElementById(`card-${orderId}`);
+                if (card) card.remove();
+                showCustomAlert("⚠️ 订单已被强制动作废处理。");
+            });
+        }
+
+        function openGroupHistory() {
+            document.getElementById('history-modal').style.display = 'flex';
+            const todayStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+            loadGroupHistoryByDate(todayStr);
+        }
+
+        function closeGroupHistory() { document.getElementById('history-modal').style.display = 'none'; }
+
+        async function loadGroupHistoryByDate(dateStr) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:#A08875; font-weight:bold;">⏳ 正在抓取并核算账单...</div>';
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+
+            try {
+                // 🌟 先抓取线上菜单，建立价格参考字典
+                let menuMap = {};
+                try {
+                    const menuRes = await fetch(`${dbUrl}/menu_config/${shopId}/group_menu.json`);
+                    const menuItems = await menuRes.json();
+                    if (Array.isArray(menuItems)) {
+                        menuItems.forEach(item => {
+                            if (item && item.name) {
+                                menuMap[item.name.trim()] = parseFloat(item.price) || 0;
+                            }
+                        });
+                    }
+                } catch (e) { console.warn("抓取菜单价格参考失败", e); }
+
+                const res = await fetch(`${dbUrl}/group_history/${shopId}/${dateStr}.json?auth=${sysToken}`);
+                const data = await res.json();
+
+                let dateSelectorHtml = `
+                    <div style="margin-bottom: 15px; display: flex; gap: 12px; align-items: center; background:#FFF; padding:10px 15px; border-radius:12px; border:1px solid #EFE2D5;">
+                        <span style="font-size: 14px; font-weight: bold; color: #8B5A2B;">对账日期:</span>
+                        <input type="date" value="${dateStr}" onchange="loadGroupHistoryByDate(this.value)" style="border: 1px solid #E6D5C5; padding: 6px 12px; border-radius: 8px; font-family: inherit; color: #8B5A2B; font-weight: bold; outline: none; background:#FFFBF7; flex:1;">
+                    </div>`;
+
+                if (!data) {
+                    list.innerHTML = dateSelectorHtml + `
+                        <div style="background: #FFF; border: 1px solid #EFE2D5; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(139, 90, 43, 0.03);">
+                            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; color: #8B5A2B;"><span>💰 今日营业总额:</span> <span>RM 0.00</span></div>
+                        </div>
+                        <div style="text-align:center; color:#999; padding:30px; background:#FFF; border-radius:12px; border:1px dashed #EFE2D5;">📭 该日期暂无已结账或作废的团餐记录</div>`;
+                    return;
+                }
+
+                let html = ''; let cancelledHtml = '';
+                let totalCount = 0; let cancelledCount = 0;
+                let totalRevenue = 0;
+
+                Object.keys(data).reverse().forEach(key => {
+                    const order = data[key];
+
+                    let priceText = "RM 0.00";
+                    let calculatedTotal = 0;
+
+                    // 优先读取结账时的绝对快照，无视后期的菜单改价
+                    if (typeof order.finalTotal !== 'undefined') {
+                        calculatedTotal = parseFloat(order.finalTotal) || 0;
+                    }
+                    // 兼容防护：引入多选机制后，老数据兼容段同样适用逗号拆分引擎推算
+                    else if (order.details) {
+                        order.details.split(',').forEach(segment => {
+                            if (segment.includes('x')) {
+                                const lastXIndex = segment.lastIndexOf('x');
+                                const mealName = segment.substring(0, lastXIndex).trim();
+                                const detailQty = parseInt(segment.substring(lastXIndex + 1).trim()) || 0;
+                                calculatedTotal += (menuMap[mealName] || 0) * detailQty;
+                            }
+                        });
+                    }
+
+                    if (calculatedTotal > 0) {
+                        if (order.status !== 'cancelled') totalRevenue += calculatedTotal;
+                        priceText = `RM ${calculatedTotal.toFixed(2)}`;
+                    }
+
+                    let primaryName = order.customerName || "顾客";
+                    let fullDetailsStr = order.customerDataStr ? order.customerDataStr.replace(/ \| /g, '<br>') : (order.address ? `📍 配送地址: ${order.address}` : '无附加信息');
+
+                    let customerHistoryHtml = `
+                        <div onclick="let d = this.nextElementSibling; let i = this.lastElementChild; if(d.style.display==='none'){d.style.display='block';i.innerText='▲ 收起';}else{d.style.display='none';i.innerText='▼ 展开';}" style="font-weight: bold; color: ${order.status === 'cancelled' ? '#b71c1c' : '#633E1A'}; font-size:15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="margin-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">👤 ${primaryName}</span>
+                            <span style="font-size: 12px; color: ${order.status === 'cancelled' ? '#c62828' : '#8B5A2B'}; background: ${order.status === 'cancelled' ? '#ffebee' : '#EFE2D5'}; padding: 2px 8px; border-radius: 10px; flex-shrink: 0;">▼ 展开</span>
+                        </div>
+                        <div style="display: none; font-size: 13px; color: ${order.status === 'cancelled' ? '#e57373' : '#8d6e63'}; margin-top: 6px; padding: 8px; background: ${order.status === 'cancelled' ? '#fff' : '#FFFBF7'}; border-radius: 6px; border: 1px dashed ${order.status === 'cancelled' ? '#ffcdd2' : '#EFE2D5'}; line-height: 1.6;">
+                            ${fullDetailsStr}
+                        </div>
+                    `;
+
+                    if (order.status === 'cancelled') {
+                        cancelledCount++;
+                        cancelledHtml += `
+                        <div class="history-item-card" style="background: #fff5f5; border-color: #ffcdd2;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ffcdd2; padding-bottom: 8px; margin-bottom: 8px; font-size:13px;">
+                                <div style="font-weight: bold; color: #c62828;"><del>单号: #${key.slice(-4)}</del></div>
+                                <div style="color: #e57373;">${order.cancelTime ? order.cancelTime.split(' ')[1] : '-'}</div>
+                            </div>
+                            ${customerHistoryHtml}
+                            <div style="font-size: 14px; color: #e57373; margin-top: 6px; background:#fff; padding:8px; border-radius:6px; border:1px solid #ffebee;">${order.details}</div>
+                            <div style="margin-top: 8px; display:flex; justify-content:space-between; align-items:center; font-size: 13px; font-weight: bold; color: #c62828;">
+                                <span>🚫 已作废</span>
+                                <span style="text-decoration:line-through; color:#b71c1c;">${priceText}</span>
+                            </div>
+                        </div>`;
+                    } else {
+                        totalCount++;
+                        html += `
+                        <div class="history-item-card">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #EFE2D5; padding-bottom: 8px; margin-bottom: 8px; font-size:13px;">
+                                <div style="font-weight: bold; color: #4A3E3D;">单号: #${key.slice(-4)}</div>
+                                <div style="color: #A08875;">${order.checkoutTime ? order.checkoutTime.split(' ')[1] : '-'}</div>
+                            </div>
+                            ${customerHistoryHtml}
+                            <div style="font-size: 14px; color: #633E1A; margin-top: 6px; background:#FFFBF7; padding:8px; border-radius:6px; border:1px solid #FDF5ED;">${order.details}</div>
+                            <div style="margin-top: 8px; display:flex; justify-content:space-between; align-items:center; font-size: 13px; font-weight: bold; color: #2e7d32;">
+                                <span>✅ 已核实交付</span>
+                                <span style="font-size:15px; color:#D2691E; font-weight:900;">${priceText}</span>
+                            </div>
+                        </div>`;
+                    }
+                });
+
+                let summaryHtml = `
+                <div style="background: #FFF; border: 1px solid #EFE2D5; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(139, 90, 43, 0.05);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #4A3E3D; font-size: 14px;"><span>📦 有效交付单数:</span> <strong>${totalCount} 单</strong></div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #c62828; font-size: 14px;"><span>🚫 异常作废单数:</span> <strong>${cancelledCount} 单</strong></div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px dashed #EFE2D5; padding-top: 10px; font-size: 18px; font-weight: bold; color: #8B5A2B;"><span>💰 今日营业总额:</span> <span>RM ${totalRevenue.toFixed(2)}</span></div>
+                </div>`;
+
+                let displayHtml = dateSelectorHtml + summaryHtml;
+                if (totalCount > 0) displayHtml += `<h3 style="color: #2e7d32; font-size:15px; margin: 15px 0 10px 5px;">🎉 成功交付归档 (${totalCount})</h3>` + html;
+                if (cancelledCount > 0) displayHtml += `<h3 style="color: #c62828; font-size:15px; margin: 20px 0 10px 5px;">🚫 历史作废单据 (${cancelledCount})</h3>` + cancelledHtml;
+                list.innerHTML = displayHtml;
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = `<div style="text-align:center; color:#c62828; padding:20px;">❌ 通信故障，无法抓取历史账目！</div>`;
+            }
+        }
+
+        // 页面启动初始化挂载
+        window.onload = function () {
+            // 🌟 动态映射招牌名称
+            const shopConfig = typeof allShopsData !== 'undefined' ? allShopsData[shopId] : null;
+            if (shopConfig) {
+                document.querySelector('.header-title').innerText = `📦 ${shopConfig.shopName} 实时看板`;
+            }
+
+            loadMenuDraftFromLocal();
+            startLiveOrdersStream();
+            loadFormFieldsFromCloud();
+        };
+
+        function loadFormFieldsFromCloud() {
+            fetch(`${dbUrl}/menu_config/${shopId}/form_fields.json`)
+                .then(res => res.json())
+                .then(fields => {
+                    const container = document.getElementById('dynamic-form-inputs');
+                    container.innerHTML = "";
+
+                    // 🌟 核心判断：如果有数据则渲染，如果没有数据（或为空）则强制渲染默认值
+                    if (fields && Array.isArray(fields) && fields.length > 0) {
+                        fields.forEach(f => addFormFieldRow(f.label, f.placeholder));
+                    } else {
+                        addFormFieldRow("👤 联系人姓名", "请输入您的称呼");
+                        addFormFieldRow("📍 配送地址 (若自取请填'自取')", "请输入完整配送地址");
+                    }
+                }).catch(err => {
+                    console.warn("拉取表单字段失败", err);
+                    // 即使网络断开，也保证本地有默认输入框
+                    const container = document.getElementById('dynamic-form-inputs');
+                    container.innerHTML = "";
+                    addFormFieldRow("👤 联系人姓名", "请输入您的称呼");
+                    addFormFieldRow("📍 配送地址 (若自取请填'自取')", "请输入完整配送地址");
+                });
+        }
+
+        function addFormFieldRow(label = "", placeholder = "") {
+            const container = document.getElementById('dynamic-form-inputs');
+            const row = document.createElement('div');
+            row.className = 'form-input-row';
+            row.style.cssText = 'display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start; background: #FFFBF7; padding: 12px; border: 1px solid #EFE2D5; border-radius: 12px; box-sizing: border-box; width: 100%;';
+            row.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0;">
+                    <input type="text" class="form-label" value="${label}" placeholder="字段名 (例: 👤 联系人姓名)" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #E6D5C5; border-radius: 8px; outline: none; font-weight: bold; color: #4A3E3D; font-size: 14px;">
+                    <input type="text" class="form-placeholder" value="${placeholder}" placeholder="输入框提示文案 (例: 请输入您的称呼)" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px dashed #E6D5C5; border-radius: 8px; outline: none; font-size: 13px; color: #8d6e63; background: #FFF;">
+                </div>
+                <button onclick="this.closest('.form-input-row').remove()" style="width: 44px; height: 44px; flex-shrink: 0; background: #FFF5F5; color: #C62828; border: 1px dashed #FFCDD2; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">×</button>
+            `;
+            container.appendChild(row);
+        }
+
+        async function updateFormFields() {
+            let sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            if (!sysToken) return alert("🚨 身份已过期，请重新登录。");
+
+            const rows = document.querySelectorAll('.form-input-row');
+            let formItems = [];
+            rows.forEach(row => {
+                const l = row.querySelector('.form-label').value.trim();
+                const p = row.querySelector('.form-placeholder').value.trim();
+                if (l) formItems.push({ label: l, placeholder: p });
+            });
+
+            if (formItems.length === 0) return alert("⚠️ 请至少保留一个表单字段！");
+
+            const btn = document.getElementById('save-form-btn');
+            btn.innerText = "⏳ 正在同步...";
+            btn.disabled = true;
+
+            try {
+                let response = await fetch(`${dbUrl}/menu_config/${shopId}/form_fields.json?auth=${sysToken}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formItems)
+                });
+
+                if (response.status === 401) {
+                    const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBGCsr8BXtj7UPZ2aJFhVvEX2Y1znht8mY`, {
+                        method: 'POST', body: JSON.stringify({ email: "qrfood@wenxuan.com", password: "qrfood878712", returnSecureToken: true }), headers: { 'Content-Type': 'application/json' }
+                    });
+                    const authData = await authRes.json();
+                    if (authData.idToken) {
+                        sysToken = authData.idToken;
+                        localStorage.setItem(`sys_token_${shopId}`, sysToken);
+                        response = await fetch(`${dbUrl}/menu_config/${shopId}/form_fields.json?auth=${sysToken}`, {
+                            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formItems)
+                        });
+                    }
+                }
+                if (!response.ok) throw new Error("云端拒绝");
+                alert("✅ 表单字段同步成功！");
+            } catch (err) {
+                alert("❌ 同步失败，请刷新页面或重新登入。");
+            } finally {
+                btn.innerText = "🚀 同步表单到前台";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

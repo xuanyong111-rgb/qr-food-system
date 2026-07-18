@@ -1,0 +1,58 @@
+{
+  "rules": {
+    "orders": {
+      ".read": true,
+      "$orderId": {
+        ".write": "(!data.exists() && newData.child('status').val() === 'pending') || auth != null"
+      }
+    },
+    "history": {
+      ".read": "auth != null",
+      "$date": {
+        "$orderId": {
+          ".write": "auth != null && newData.exists()"
+        }
+      }
+    },
+    "shop_status": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "device_locks": {
+      ".read": true,
+      ".write": "auth != null" 
+    },
+    "shops": {
+      ".read": true,
+      "$shopId": {
+        "settings": {
+          ".read": true,
+          ".write": "auth != null"
+        },
+        ".write": "auth != null"
+      }
+    },
+    "menu_config": {
+      ".read": true,
+      "$shopId": {
+        ".write": "auth != null" 
+      }
+    },
+    "group_orders": {
+      ".read": "auth != null", 
+      "$orderId": {
+        ".write": "!data.exists() || auth != null"
+      }
+    },
+    "group_history": {
+      ".read": "auth != null",
+      "$shopId": {
+        "$date": {
+          "$orderId": {
+            ".write": "auth != null"
+          }
+        }
+      }
+    }
+  }
+}

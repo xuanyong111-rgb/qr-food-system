@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wealthflow-pos-v1';
+const CACHE_NAME = 'wuwangxin-pos-v1';
 
 // 仅放入最核心的、100% 确定存在的静态资源路径
 const urlsToCache = [

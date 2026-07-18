@@ -1,6 +1,6 @@
 {
-  "name": "WealthFlow Pro",
-  "short_name": "WealthFlow",
+  "name": "wuwangxin Pro",
+  "short_name": "wuwangxin",
   "start_url": "./login.html",
   "display": "standalone",
   "background_color": "#FAF6F0",

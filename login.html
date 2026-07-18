@@ -234,6 +234,16 @@
                 <p>预览点餐静态配置菜单、动态Firebase规格选择及桌号一键下单系统。</p>
                 <span class="tag">无需指纹验证</span>
             </a>
+            <a class="card" id="link-group-admin" href="#">
+                <h3>📦 批量叫货总控台</h3>
+                <p>管理每日团餐菜单，实时接收并核对顾客通过 WhatsApp 发送的防伪订单。</p>
+                <span class="tag active">生态设备锁保护</span>
+            </a>
+            <a class="card" id="link-group-reserve" href="#" target="_blank">
+                <h3>🍽️ 对外自助下单链接</h3>
+                <p>商户专属的团餐对外展示与客户自助下单链接，点击可直接复制或预览。</p>
+                <span class="tag">对外公开通道</span>
+            </a>
         </div>
     </div>
 
@@ -242,9 +252,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         let shopId = urlParams.get('shop');
 
-        // 💡核心改动：如果 URL 里没带 shop 参数（比如从 PWA 图标启动），就去本地缓存拿上次登录成功的 ID
+        // 💡 隔离改动：改用系统专属的前缀键名，彻底切断与其他项目的本地缓存碰撞风险
         if (!shopId) {
-            shopId = localStorage.getItem('pwa_remember_shop');
+            shopId = localStorage.getItem('qr_food_remember_shop');
         }
 
         window.onload = () => {
@@ -253,8 +263,8 @@
                 return;
             }
 
-            // 💡核心改动：只要成功进来一次，就把这个店铺 ID 存在手机本地
-            localStorage.setItem('pwa_remember_shop', shopId);
+            // 💡 隔离改动：同步更新存储键名，确保 Netlify 多项目同域或混用时 100% 物理隔离
+            localStorage.setItem('qr_food_remember_shop', shopId);
 
             document.getElementById('login-title').innerText = allShopsData[shopId].shopName + " 后台";
 
@@ -274,7 +284,7 @@
                 ctx.fillStyle = "#f60";
                 ctx.fillRect(125, 1, 62, 20);
                 ctx.fillStyle = "#069";
-                ctx.fillText("WealthFlow_Secure_Lock_2026", 2, 15);
+                ctx.fillText("wuwangxin_Secure_Lock_2026", 2, 15);
                 const b64 = canvas.toDataURL().slice(-50);
                 let hash = 0;
                 for (let i = 0; i < b64.length; i++) {
@@ -296,6 +306,8 @@
             document.getElementById('link-cashier').href = `cashier.html?shop=${shopId}`;
             document.getElementById('link-kitchen').href = `kitchen.html?shop=${shopId}`;
             document.getElementById('link-order').href = `index.html?shop=${shopId}`;
+            document.getElementById('link-group-admin').href = `group_admin.html?shop=${shopId}`;
+            document.getElementById('link-group-reserve').href = `group_reserve.html?shop=${shopId}`;
         }
 
         async function handleLogin() {

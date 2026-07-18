@@ -188,84 +188,89 @@
         <div id="qr-generator-tab" class="admin-tab-content" style="display: none; padding: 20px;">
             <h3 style="color: #8B5A2B; margin-top: 0;">🖼️ 桌面扫码点餐 二维码生成引擎</h3>
 
-            <div
-                style="display: flex; gap: 30px; background: #FFF; border: 1px solid #EFE2D5; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(139,90,43,0.05);">
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <label style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">商户 ID
-                            (Shop ID):</label>
-                        <input type="text" id="qr-shop-id" placeholder="例如: customer_shop_A"
-                            style="width: 100%; border: 1px solid #E6D5C5; padding: 10px; border-radius: 8px; background: #FFF; color: #4A3E3D; font-weight: bold; outline: none;">
-                    </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <label style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">商户 ID (Shop
+                        ID):</label>
+                    <input type="text" id="qr-shop-id" placeholder="例如: customer_shop_A"
+                        style="width: 100%; border: 1px solid #E6D5C5; padding: 10px; border-radius: 8px; background: #FFF; color: #4A3E3D; font-weight: bold; outline: none;">
+                </div>
 
-                    <div>
+                <div>
+                    <label style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">目标路由网页 (Target
+                        HTML):</label>
+                    <input type="text" id="qr-target-html" value="login.html" placeholder="例如: login.html 或 pos.html"
+                        style="width: 100%; border: 1px solid #E6D5C5; padding: 10px; border-radius: 8px; background: #FFF; color: #4A3E3D; font-weight: bold; outline: none;">
+                </div>
+
+                <div>
+                    <label style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">二维码类型:</label>
+                    <div style="display: flex; gap: 20px; margin: 5px 0;">
                         <label
-                            style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">二维码类型:</label>
-                        <div style="display: flex; gap: 20px; margin: 5px 0;">
-                            <label
-                                style="color: #4A3E3D; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                <input type="radio" name="qr-type" value="table" checked
-                                    onchange="toggleQrTableInput(true)"> 绑定桌面座号
-                            </label>
-                            <label
-                                style="color: #4A3E3D; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                                <input type="radio" name="qr-type" value="menu" onchange="toggleQrTableInput(false)">
-                                纯网络菜单 (无座号)
-                            </label>
-                        </div>
+                            style="color: #4A3E3D; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="qr-type" value="table" checked
+                                onchange="toggleQrTableInput(true)"> 绑定桌面座号
+                        </label>
+                        <label
+                            style="color: #4A3E3D; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="qr-type" value="menu" onchange="toggleQrTableInput(false)"> 纯网络菜单
+                            (无座号)
+                        </label>
                     </div>
-
-                    <div id="qr-table-container">
-                        <label style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">输入桌号
-                            (可输入多个，用逗号隔开):</label>
-                        <input type="text" id="qr-table-num" placeholder="例如: A1, A2, A3, 外带"
-                            style="width: 100%; border: 1px solid #E6D5C5; padding: 10px; border-radius: 8px; color: #4A3E3D; font-weight: bold; outline: none;">
-                    </div>
-
-                    <button onclick="generateTableQRCode()"
-                        style="background: #8B5A2B; color: white; border: none; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 25px; cursor: pointer; margin-top: 10px;">生成点餐二维码</button>
                 </div>
 
-                <div
-                    style="flex: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px dashed #DCC8B7; padding-left: 30px;">
-                    <div id="qrcode-display"
-                        style="padding: 10px; background: #fff; border: 1px solid #EFE2D5; border-radius: 8px; min-height: 160px; width: 100%; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-start; justify-content: center;">
-                        <span style="color: #999; font-size: 13px; margin-top: 60px;">暂无二维码</span>
-                    </div>
-                    <button id="download-qr-btn" onclick="downloadAllQRCodes()"
-                        style="display: none; background: #FFFBF7; color: #8B5A2B; border: 1px solid #E6D5C5; padding: 8px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; margin-top: 15px;">📥
-                        批量下载图片</button>
+
+                <div id="qr-table-container">
+                    <label style="font-weight: bold; color: #4A3E3D; display: block; margin-bottom: 6px;">输入桌号
+                        (可输入多个，用逗号隔开):</label>
+                    <input type="text" id="qr-table-num" placeholder="例如: A1, A2, A3, 外带"
+                        style="width: 100%; border: 1px solid #E6D5C5; padding: 10px; border-radius: 8px; color: #4A3E3D; font-weight: bold; outline: none;">
                 </div>
+
+                <button onclick="generateTableQRCode()"
+                    style="background: #8B5A2B; color: white; border: none; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 25px; cursor: pointer; margin-top: 10px;">生成点餐二维码</button>
             </div>
-        </div>
 
-        <div id="custom-alert-modal"
-            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
             <div
-                style="background: #FAF6F0; width: 80%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <div id="custom-alert-text"
-                    style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">
-                    提示内容</div>
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="custom-alert-cancel" onclick="closeCustomAlert()"
-                        style="display: none; flex: 1; background: #E6D5C5; color: #633E1A; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">取消</button>
-                    <button id="custom-alert-confirm"
-                        style="flex: 1; background: #8B5A2B; color: white; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确定</button>
+                style="flex: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px dashed #DCC8B7; padding-left: 30px;">
+                <div id="qrcode-display"
+                    style="padding: 10px; background: #fff; border: 1px solid #EFE2D5; border-radius: 8px; min-height: 160px; width: 100%; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-start; justify-content: center;">
+                    <span style="color: #999; font-size: 13px; margin-top: 60px;">暂无二维码</span>
                 </div>
+                <button id="download-qr-btn" onclick="downloadAllQRCodes()"
+                    style="display: none; background: #FFFBF7; color: #8B5A2B; border: 1px solid #E6D5C5; padding: 8px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; margin-top: 15px;">📥
+                    批量下载图片</button>
             </div>
         </div>
+    </div>
 
-        <script>
-            const dbUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app";
+    <div id="custom-alert-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 62, 61, 0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div
+            style="background: #FAF6F0; width: 80%; max-width: 320px; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div id="custom-alert-text"
+                style="font-size: 16px; color: #4A3E3D; font-weight: bold; line-height: 1.5; margin-bottom: 24px;">
+                提示内容</div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="custom-alert-cancel" onclick="closeCustomAlert()"
+                    style="display: none; flex: 1; background: #E6D5C5; color: #633E1A; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">取消</button>
+                <button id="custom-alert-confirm"
+                    style="flex: 1; background: #8B5A2B; color: white; border: none; padding: 10px 0; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer;">确定</button>
+            </div>
+        </div>
+    </div>
 
-            function renderAdminPortal() {
-                const listContainer = document.getElementById('shops-management-list');
-                listContainer.innerHTML = "";
+    <script>
+        const dbUrl = "https://qr-foor-orders-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-                Object.keys(allShopsData).forEach(shopId => {
-                    const shopConfig = allShopsData[shopId];
+        function renderAdminPortal() {
+            const listContainer = document.getElementById('shops-management-list');
+            listContainer.innerHTML = "";
 
-                    const cardHtml = `
+            Object.keys(allShopsData).forEach(shopId => {
+                const shopConfig = allShopsData[shopId];
+
+                const cardHtml = `
                     <div class="shop-card">
                         <div class="shop-header">
                             <span class="shop-name">🏪 ${shopConfig.shopName} (${shopId})</span>
@@ -284,246 +289,247 @@
                         </div>
                     </div>
                 `;
-                    listContainer.innerHTML += cardHtml;
-                    fetchShopStatus(shopId);
-                });
-            }
+                listContainer.innerHTML += cardHtml;
+                fetchShopStatus(shopId);
+            });
+        }
 
-            async function fetchShopStatus(shopId) {
-                try {
-                    const sysToken = localStorage.getItem(`sys_token_${shopId}`);
-                    const response = await fetch(`${dbUrl}/shop_status/${shopId}.json?auth=${sysToken}`);
-                    const data = await response.json();
-                    const badge = document.getElementById(`badge-${shopId}`);
-
-                    if (badge) {
-                        if (data && data.isLocked === true) {
-                            badge.innerText = "🚨 已依法锁死";
-                            badge.className = "status-badge locked";
-                            if (data.reason) document.getElementById(`reason-${shopId}`).value = data.reason;
-                        } else {
-                            badge.innerText = "🟢 正常营业中";
-                            badge.className = "status-badge normal";
-                        }
-                    }
-                } catch (err) {
-                    console.error("抓取状态失败", err);
-                }
-            }
-
-            async function setShopLock(shopId, shouldLock) {
+        async function fetchShopStatus(shopId) {
+            try {
                 const sysToken = localStorage.getItem(`sys_token_${shopId}`);
-                const targetUrl = `${dbUrl}/shop_status/${shopId}.json?auth=${sysToken}`;
+                const response = await fetch(`${dbUrl}/shop_status/${shopId}.json?auth=${sysToken}`);
+                const data = await response.json();
+                const badge = document.getElementById(`badge-${shopId}`);
 
-                const reasonInput = document.getElementById(`reason-${shopId}`);
-                const reasonText = reasonInput ? reasonInput.value.trim() : "未按时缴纳系统维护费";
-
-                let payload = null;
-                if (shouldLock) {
-                    payload = {
-                        isLocked: true,
-                        reason: reasonText || "未按时缴纳系统维护费",
-                        lockTime: new Date().toLocaleString()
-                    };
-                } else {
-                    payload = {
-                        isLocked: false
-                    };
-                }
-
-                try {
-                    await fetch(targetUrl, {
-                        method: 'PATCH',
-                        body: JSON.stringify(payload)
-                    });
-                    alert(`操作成功！已同步 ${shopId} 的云端死锁状态。`);
-                    fetchShopStatus(shopId);
-                } catch (err) {
-                    alert("云端通信失败！");
-                }
-            }
-
-            async function clearAllDeviceLocks(shopId) {
-                if (!confirm(`确定要重置清除 ${shopId} 旗下的所有物理指纹绑定吗？`)) return;
-                const sysToken = localStorage.getItem(`sys_token_${shopId}`);
-                const targetUrl = `${dbUrl}/device_locks/${shopId}.json?auth=${sysToken}`;;
-                try {
-                    await fetch(targetUrl, { method: 'DELETE' });
-                    alert("该店设备锁已全部重置成功！");
-                } catch (err) {
-                    alert("重置失败！");
-                }
-            }
-
-            window.onload = () => {
-                renderAdminPortal();
-            };
-
-            let activeQRCodeInstance = null;
-
-            // 💡 新增：动态切换桌号输入区块的隐藏与显示
-            function toggleQrTableInput(show) {
-                const container = document.getElementById('qr-table-container');
-                if (container) container.style.display = show ? 'block' : 'none';
-            }
-
-            function generateTableQRCode() {
-                let shopId = document.getElementById('qr-shop-id').value.trim();
-                const displayContainer = document.getElementById('qrcode-display');
-                const downloadBtn = document.getElementById('download-qr-btn');
-                const qrType = document.querySelector('input[name="qr-type"]:checked').value;
-
-                // 🚨 1. 强力防御：如果是错误的链接输入或包含了网页后缀，直接强制净化或拦截
-                if (shopId.includes('shop=')) {
-                    shopId = shopId.split('shop=')[1].split('&')[0];
-                    document.getElementById('qr-shop-id').value = shopId;
-                }
-
-                // 如果过滤后不小心拿到了当前的网页名，或者是空的，立刻阻断
-                if (!shopId || shopId.toLowerCase().includes('.html')) {
-                    return showCustomAlert('⚠️ 请输入正确的商户 ID（例如: wuwangxin_a），不能为网页名或留空！');
-                }
-
-                displayContainer.innerHTML = "";
-                const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
-
-                // 2. 纯菜单网络码分支
-                if (qrType === 'menu') {
-                    const targetUrl = `${baseUrl}?shop=${shopId}`;
-
-                    const card = document.createElement('div');
-                    card.style.cssText = "display: flex; flex-direction: column; align-items: center; gap: 8px; background: #FFFBF7; padding: 10px; border: 1px solid #E6D5C5; border-radius: 8px;";
-
-                    const title = document.createElement('div');
-                    title.innerText = "纯网络菜单码";
-                    title.style.cssText = "font-weight: bold; color: #8B5A2B; font-size: 14px;";
-
-                    const qrBox = document.createElement('div');
-                    qrBox.className = "qr-canvas-item";
-                    qrBox.setAttribute('data-table', '纯菜单');
-
-                    card.appendChild(title);
-                    card.appendChild(qrBox);
-                    displayContainer.appendChild(card);
-
-                    new QRCode(qrBox, {
-                        text: targetUrl,
-                        width: 140,
-                        height: 140,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-
-                    if (downloadBtn) downloadBtn.style.display = "block";
-                    return;
-                }
-
-                // 3. 桌面绑号码分支
-                const tableNumRaw = document.getElementById('qr-table-num').value.trim();
-                if (!tableNumRaw) return showCustomAlert('⚠️ 请输入桌号！');
-
-                let tables = [];
-                const chunks = tableNumRaw.split(/[,，]/).map(t => t.trim()).filter(t => t);
-
-                chunks.forEach(chunk => {
-                    const rangeMatch = chunk.match(/^([a-zA-Z]*)(\d+)\s*-\s*([a-zA-Z]*)(\d+)$/);
-                    if (rangeMatch) {
-                        const prefix = rangeMatch[1] || rangeMatch[3];
-                        const start = parseInt(rangeMatch[2], 10);
-                        const end = parseInt(rangeMatch[4], 10);
-
-                        if (start <= end && (end - start) <= 500) {
-                            for (let i = start; i <= end; i++) {
-                                tables.push(`${prefix}${i}`);
-                            }
-                            return;
-                        }
+                if (badge) {
+                    if (data && data.isLocked === true) {
+                        badge.innerText = "🚨 已依法锁死";
+                        badge.className = "status-badge locked";
+                        if (data.reason) document.getElementById(`reason-${shopId}`).value = data.reason;
+                    } else {
+                        badge.innerText = "🟢 正常营业中";
+                        badge.className = "status-badge normal";
                     }
-                    tables.push(chunk);
-                });
-
-                tables.forEach(tableNum => {
-                    const targetUrl = `${baseUrl}?shop=${shopId}&table=${encodeURIComponent(tableNum)}`;
-                    const card = document.createElement('div');
-                    card.style.cssText = "display: flex; flex-direction: column; align-items: center; gap: 8px; background: #FFFBF7; padding: 10px; border: 1px solid #E6D5C5; border-radius: 8px;";
-
-                    const title = document.createElement('div');
-                    title.innerText = tableNum;
-                    title.style.cssText = "font-weight: bold; color: #8B5A2B; font-size: 14px;";
-
-                    const qrBox = document.createElement('div');
-                    qrBox.className = "qr-canvas-item";
-                    qrBox.setAttribute('data-table', tableNum);
-
-                    card.appendChild(title);
-                    card.appendChild(qrBox);
-                    displayContainer.appendChild(card);
-
-                    new QRCode(qrBox, {
-                        text: targetUrl,
-                        width: 140,
-                        height: 140,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                });
-
-                if (downloadBtn && tables.length > 0) downloadBtn.style.display = "block";
-            }
-
-            function downloadAllQRCodes() {
-                const qrItems = document.querySelectorAll('.qr-canvas-item');
-                if (qrItems.length === 0) return;
-
-                qrItems.forEach((item, index) => {
-                    const tableNum = item.getAttribute('data-table');
-                    const img = item.querySelector('img');
-                    if (img && img.src) {
-                        setTimeout(() => {
-                            const link = document.createElement('a');
-                            link.href = img.src;
-                            link.download = `商户_${tableNum}_扫码点餐.png`;
-                            link.click();
-                        }, index * 300);
-                    }
-                });
-            }
-
-            function toggleQRPanel() {
-                const panel = document.getElementById('qr-generator-tab');
-                if (!panel) return;
-
-                if (panel.style.display === 'none' || panel.style.display === '') {
-                    panel.style.display = 'block';
-                    if (typeof currentShopId !== 'undefined') {
-                        const shopInput = document.getElementById('qr-shop-id');
-                        if (shopInput) shopInput.value = currentShopId;
-                    }
-                    panel.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    panel.style.display = 'none';
                 }
+            } catch (err) {
+                console.error("抓取状态失败", err);
             }
-            let onCustomConfirmCallback = null;
-            function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
-                const modal = document.getElementById('custom-alert-modal');
-                document.getElementById('custom-alert-text').innerHTML = text;
-                onCustomConfirmCallback = confirmCallback;
+        }
 
-                document.getElementById('custom-alert-cancel').style.display = isConfirmMode ? 'block' : 'none';
-                document.getElementById('custom-alert-confirm').onclick = function () {
-                    if (isConfirmMode && typeof onCustomConfirmCallback === "function") {
-                        onCustomConfirmCallback();
-                    }
-                    closeCustomAlert();
+        async function setShopLock(shopId, shouldLock) {
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            const targetUrl = `${dbUrl}/shop_status/${shopId}.json?auth=${sysToken}`;
+
+            const reasonInput = document.getElementById(`reason-${shopId}`);
+            const reasonText = reasonInput ? reasonInput.value.trim() : "未按时缴纳系统维护费";
+
+            let payload = null;
+            if (shouldLock) {
+                payload = {
+                    isLocked: true,
+                    reason: reasonText || "未按时缴纳系统维护费",
+                    lockTime: new Date().toLocaleString()
                 };
-                if (modal) modal.style.display = "flex";
+            } else {
+                payload = {
+                    isLocked: false
+                };
             }
-            function closeCustomAlert() {
-                const modal = document.getElementById('custom-alert-modal');
-                if (modal) modal.style.display = "none";
+
+            try {
+                await fetch(targetUrl, {
+                    method: 'PATCH',
+                    body: JSON.stringify(payload)
+                });
+                alert(`操作成功！已同步 ${shopId} 的云端死锁状态。`);
+                fetchShopStatus(shopId);
+            } catch (err) {
+                alert("云端通信失败！");
             }
-        </script>
+        }
+
+        async function clearAllDeviceLocks(shopId) {
+            if (!confirm(`确定要重置清除 ${shopId} 旗下的所有物理指纹绑定吗？`)) return;
+            const sysToken = localStorage.getItem(`sys_token_${shopId}`);
+            const targetUrl = `${dbUrl}/device_locks/${shopId}.json?auth=${sysToken}`;;
+            try {
+                await fetch(targetUrl, { method: 'DELETE' });
+                alert("该店设备锁已全部重置成功！");
+            } catch (err) {
+                alert("重置失败！");
+            }
+        }
+
+        window.onload = () => {
+            renderAdminPortal();
+        };
+
+        let activeQRCodeInstance = null;
+
+        // 💡 新增：动态切换桌号输入区块的隐藏与显示
+        function toggleQrTableInput(show) {
+            const container = document.getElementById('qr-table-container');
+            if (container) container.style.display = show ? 'block' : 'none';
+        }
+
+        function generateTableQRCode() {
+            let shopId = document.getElementById('qr-shop-id').value.trim();
+            const displayContainer = document.getElementById('qrcode-display');
+            const downloadBtn = document.getElementById('download-qr-btn');
+            const qrType = document.querySelector('input[name="qr-type"]:checked').value;
+
+            // 🚨 1. 强力防御：如果是错误的链接输入或包含了网页后缀，直接强制净化或拦截
+            if (shopId.includes('shop=')) {
+                shopId = shopId.split('shop=')[1].split('&')[0];
+                document.getElementById('qr-shop-id').value = shopId;
+            }
+
+            // 如果过滤后不小心拿到了当前的网页名，或者是空的，立刻阻断
+            if (!shopId || shopId.toLowerCase().includes('.html')) {
+                return showCustomAlert('⚠️ 请输入正确的商户 ID（例如: wuwangxin_a），不能为网页名或留空！');
+            }
+
+            displayContainer.innerHTML = "";
+            const targetHtml = document.getElementById('qr-target-html').value.trim() || 'login.html';
+            const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', targetHtml);
+
+            // 2. 纯菜单网络码分支
+            if (qrType === 'menu') {
+                const targetUrl = `${baseUrl}?shop=${shopId}`;
+
+                const card = document.createElement('div');
+                card.style.cssText = "display: flex; flex-direction: column; align-items: center; gap: 8px; background: #FFFBF7; padding: 10px; border: 1px solid #E6D5C5; border-radius: 8px;";
+
+                const title = document.createElement('div');
+                title.innerText = "纯网络菜单码";
+                title.style.cssText = "font-weight: bold; color: #8B5A2B; font-size: 14px;";
+
+                const qrBox = document.createElement('div');
+                qrBox.className = "qr-canvas-item";
+                qrBox.setAttribute('data-table', '纯菜单');
+
+                card.appendChild(title);
+                card.appendChild(qrBox);
+                displayContainer.appendChild(card);
+
+                new QRCode(qrBox, {
+                    text: targetUrl,
+                    width: 140,
+                    height: 140,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                if (downloadBtn) downloadBtn.style.display = "block";
+                return;
+            }
+
+            // 3. 桌面绑号码分支
+            const tableNumRaw = document.getElementById('qr-table-num').value.trim();
+            if (!tableNumRaw) return showCustomAlert('⚠️ 请输入桌号！');
+
+            let tables = [];
+            const chunks = tableNumRaw.split(/[,，]/).map(t => t.trim()).filter(t => t);
+
+            chunks.forEach(chunk => {
+                const rangeMatch = chunk.match(/^([a-zA-Z]*)(\d+)\s*-\s*([a-zA-Z]*)(\d+)$/);
+                if (rangeMatch) {
+                    const prefix = rangeMatch[1] || rangeMatch[3];
+                    const start = parseInt(rangeMatch[2], 10);
+                    const end = parseInt(rangeMatch[4], 10);
+
+                    if (start <= end && (end - start) <= 500) {
+                        for (let i = start; i <= end; i++) {
+                            tables.push(`${prefix}${i}`);
+                        }
+                        return;
+                    }
+                }
+                tables.push(chunk);
+            });
+
+            tables.forEach(tableNum => {
+                const targetUrl = `${baseUrl}?shop=${shopId}&table=${encodeURIComponent(tableNum)}`;
+                const card = document.createElement('div');
+                card.style.cssText = "display: flex; flex-direction: column; align-items: center; gap: 8px; background: #FFFBF7; padding: 10px; border: 1px solid #E6D5C5; border-radius: 8px;";
+
+                const title = document.createElement('div');
+                title.innerText = tableNum;
+                title.style.cssText = "font-weight: bold; color: #8B5A2B; font-size: 14px;";
+
+                const qrBox = document.createElement('div');
+                qrBox.className = "qr-canvas-item";
+                qrBox.setAttribute('data-table', tableNum);
+
+                card.appendChild(title);
+                card.appendChild(qrBox);
+                displayContainer.appendChild(card);
+
+                new QRCode(qrBox, {
+                    text: targetUrl,
+                    width: 140,
+                    height: 140,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            });
+
+            if (downloadBtn && tables.length > 0) downloadBtn.style.display = "block";
+        }
+
+        function downloadAllQRCodes() {
+            const qrItems = document.querySelectorAll('.qr-canvas-item');
+            if (qrItems.length === 0) return;
+
+            qrItems.forEach((item, index) => {
+                const tableNum = item.getAttribute('data-table');
+                const img = item.querySelector('img');
+                if (img && img.src) {
+                    setTimeout(() => {
+                        const link = document.createElement('a');
+                        link.href = img.src;
+                        link.download = `商户_${tableNum}_扫码点餐.png`;
+                        link.click();
+                    }, index * 300);
+                }
+            });
+        }
+
+        function toggleQRPanel() {
+            const panel = document.getElementById('qr-generator-tab');
+            if (!panel) return;
+
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                if (typeof currentShopId !== 'undefined') {
+                    const shopInput = document.getElementById('qr-shop-id');
+                    if (shopInput) shopInput.value = currentShopId;
+                }
+                panel.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+        let onCustomConfirmCallback = null;
+        function showCustomAlert(text, isConfirmMode = false, confirmCallback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            document.getElementById('custom-alert-text').innerHTML = text;
+            onCustomConfirmCallback = confirmCallback;
+
+            document.getElementById('custom-alert-cancel').style.display = isConfirmMode ? 'block' : 'none';
+            document.getElementById('custom-alert-confirm').onclick = function () {
+                if (isConfirmMode && typeof onCustomConfirmCallback === "function") {
+                    onCustomConfirmCallback();
+                }
+                closeCustomAlert();
+            };
+            if (modal) modal.style.display = "flex";
+        }
+        function closeCustomAlert() {
+            const modal = document.getElementById('custom-alert-modal');
+            if (modal) modal.style.display = "none";
+        }
+    </script>
 </body>
