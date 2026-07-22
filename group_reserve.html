@@ -61,6 +61,10 @@
             margin: 0;
         }
 
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         /* 顶部标题区 */
         .page-header {
             text-align: center;
@@ -83,14 +87,16 @@
             letter-spacing: 1px;
         }
 
-        /* 卡片容器 */
+        /* 卡片容器优化：自适应屏幕且不会越界 */
         .form-card {
             background: #FFF;
             border-radius: 16px;
-            padding: 20px;
+            padding: 16px; /* 缩减边距，释放屏幕空间 */
             box-shadow: 0 4px 20px rgba(139, 90, 43, 0.06);
             margin-bottom: 20px;
             border: 1px solid #FDF5ED;
+            width: 100%;
+            overflow: hidden; 
         }
 
         .section-title {
@@ -102,35 +108,23 @@
             font-weight: bold;
         }
 
-        /* 🌟 双列网格卡片菜单 (完美复刻 storefront 风格) */
+        /* 🌟 双列网格卡片菜单 */
         .showcase-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: 1fr;
+            gap: 12px;
         }
 
-        /* 隐藏原生单选框 */
-        .meal-card-label input[type="radio"] {
-            display: none;
-        }
-
-        .meal-card-label {
-            display: block;
-            height: 100%;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .meal-card-label input[type="checkbox"] {
-            display: none;
-            /* 彻底隐藏丑陋的原生多选框 */
-        }
-
+        /* 隐藏原生单选框/多选框 */
+        .meal-card-label { display: block; height: 100%; cursor: pointer; user-select: none; }
+        .meal-card-label input[type="radio"],
+        .meal-card-label input[type="checkbox"] { display: none; }
+        
         .showcase-item {
             background: #fff;
-            border-radius: 16px;
+            border-radius: 12px;
             box-shadow: 0 4px 12px rgba(139, 90, 43, 0.04);
-            padding: 18px;
+            padding: 12px; /* 缩减卡片内留白 */
             text-align: left;
             border: 2px solid #FDF5ED;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -138,30 +132,36 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            box-sizing: border-box;
+            width: 100%;
         }
 
+        /* 标题排版：加入强制断行，防止长英文/长标题撑爆卡片 */
         .showcase-title {
-            font-size: 15px;
-            font-weight: bold;
+            font-size: 14px; /* 字体精致化 */
+            font-weight: 800;
             color: #4A3E3D;
             margin-bottom: 6px;
-            line-height: 1.3;
-            padding-right: 20px;
+            line-height: 1.35;
+            padding-right: 22px;
+            word-break: break-word; 
+            overflow-wrap: anywhere; 
         }
 
         .showcase-price {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 900;
             color: #D2691E;
             margin-bottom: 8px;
         }
 
+        /* 描述排版：两端对齐，看起来更像专业的业务说明 */
         .showcase-desc {
             font-size: 12px;
-            color: #A08875;
+            color: #8d6e63;
             line-height: 1.4;
             flex: 1;
+            word-break: break-word;
+            text-align: justify; 
         }
 
         .showcase-item img {
@@ -170,17 +170,8 @@
             object-fit: cover;
         }
 
-        .showcase-item h3 {
-            font-size: 14px;
-            font-weight: bold;
-            color: #4A3E3D;
-            margin: 10px 5px 0 5px;
-            line-height: 1.3;
-            flex: 1;
-        }
-
         /* 被选中的卡片状态 (亮起烘焙橙色边框) */
-        .meal-card-label input[type="checkbox"]:checked+.showcase-item {
+        .meal-card-label input[type="checkbox"]:checked + .showcase-item {
             border-color: #D2691E;
             background: #FFFDF9;
             box-shadow: 0 6px 16px rgba(210, 105, 30, 0.12);
@@ -189,22 +180,22 @@
 
         .check-icon {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 24px;
-            height: 24px;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: #EFE2D5;
             color: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
             transition: all 0.3s ease;
         }
 
-        .meal-card-label input[type="checkbox"]:checked+.showcase-item .check-icon {
+        .meal-card-label input[type="checkbox"]:checked + .showcase-item .check-icon {
             background: #D2691E;
             color: white;
             transform: scale(1.1);
@@ -505,11 +496,18 @@
 
         // 🌟 用户点击商品卡片后，弹出表单区块
         function revealForm() {
-            // 🌟 核心修改 2：只要有勾选任何一个（大于0），就展开表单
             const checkedMeals = document.querySelectorAll('input[name="meal_choice"]:checked');
             const form = document.getElementById('order-form-section');
+            
             if (checkedMeals.length > 0) {
+                const isJustOpened = form.style.display !== 'block';
                 form.style.display = 'block';
+                
+                if (isJustOpened) {
+                    setTimeout(() => {
+                        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 200);
+                }
             } else {
                 form.style.display = 'none';
             }
