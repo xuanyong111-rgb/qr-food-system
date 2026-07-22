@@ -557,16 +557,21 @@
             };
 
             try {
-                const targetUrl = `${dbUrl}/group_orders/${orderId}.json`;
-                await fetch(targetUrl, {
-                    method: 'PUT',
+                // 将原先直连 Firebase 的请求，替换为调用新建的 Netlify 云函数
+                const response = await fetch('/.netlify/functions/submitGroupOrder', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                const waMessage = `🌟 * 订单/预订确认 * 🌟\n\n${waCustomerInfo}📦 内容：${fullDetails}\n🔑 *防伪暗号：${secureCode}*\n\n---\n⚠️ 商家提示：取餐/收货时必须核对上述暗号，系统对账以此暗号为准。`;
+                const result = await response.json();
 
-                window.location.href = `https://wa.me/${merchantPhone}?text=${encodeURIComponent(waMessage)}`;
+                if (result.success) {
+                    const waMessage = `🌟 * 订单/预订确认 * 🌟\n\n${waCustomerInfo}📦 内容：${fullDetails}\n🔑 *防伪暗号：${secureCode}*\n\n---\n⚠️ 商家提示：取餐/收货时必须核对上述暗号，系统对账以此暗号为准。`;
+                    window.location.href = `https://wa.me/${merchantPhone}?text=${encodeURIComponent(waMessage)}`;
+                } else {
+                    alert("❌ 预订失败：" + result.error);
+                }
             } catch (err) {
                 alert("🚀 云端通信失败，请检查网络！");
             }

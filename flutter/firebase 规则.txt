@@ -3,11 +3,11 @@
     "orders": {
       ".read": true,
       "$orderId": {
-        ".write": "(!data.exists() && newData.child('status').val() === 'pending') || auth != null"
+        ".write": "auth != null"
       }
     },
     "history": {
-      ".read": "auth != null",
+      ".read": true,
       "$date": {
         "$orderId": {
           ".write": "auth != null && newData.exists()"
@@ -39,13 +39,13 @@
       }
     },
     "group_orders": {
-      ".read": "auth != null", 
+      ".read": true, 
       "$orderId": {
-        ".write": "!data.exists() || auth != null"
+       ".write": "auth != null"
       }
     },
     "group_history": {
-      ".read": "auth != null",
+      ".read": true,
       "$shopId": {
         "$date": {
           "$orderId": {
